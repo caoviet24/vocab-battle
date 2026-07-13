@@ -45,7 +45,6 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request, roomCode, pID, pN
 			return
 		}
 		// Verify pass ngay
-		log.Printf("Verifying password: room.Password='%s', submitted='%s'", room.Password, password)
 		if !room.VerifyPassword(password) {
 			log.Printf("❌ Wrong password for room %s from player %s", roomCode, pID)
 			conn.WriteJSON(Message{Type: "ERROR", Payload: ErrorPayload{Code: "WRONG_PASSWORD", Message: "Sai mật khẩu phòng"}})

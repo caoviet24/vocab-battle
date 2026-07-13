@@ -129,24 +129,22 @@ Không dùng Redis — room state được giữ in-memory trong Go `Hub.Rooms` 
 ## Cách chạy local
 
 ```bash
-# 1. Khởi động MongoDB
-docker compose up -d
+# 1. Tạo cấu hình local (chỉ cần lần đầu)
+cp .env.example .env
 
-# 2. Seed data (chỉ lần đầu)
-cd data && npm install && node seed.js
+# 2. Khởi động MongoDB và seed data
+docker compose up -d mongodb
+cd data && npm install && cd .. && make seed
 
 # 3. Backend
-cd backend && go run ./cmd/server/main.go
+make dev-backend
 
 # 4. Frontend
-cd vocab-battle-client && pnpm dev
+make dev-client
 ```
 
-Env vars cho frontend (file `.env.local`):
-```
-NEXT_PUBLIC_API_URL=http://localhost:8080
-NEXT_PUBLIC_WS_URL=ws://localhost:8080
-```
+Backend, frontend, seed và Docker Compose cùng lấy cấu hình từ `.env`; chỉ
+`.env.example` được commit.
 
 ## Những điểm đáng lưu ý
 
@@ -157,4 +155,3 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8080
 - **No reconnect logic**: WS mất → player bị xóa khỏi room và `PLAYER_LEFT` broadcast. Không có cơ chế reconnect/rejoin giữ state.
 - **Single point of score**: mỗi câu đúng = 1 điểm. Không weighted score, không streak bonus.
 - **Card masking**: `maskWordInText` dùng case-insensitive substring replace — có thể mask nhầm nếu từ là substring của từ khác (vd: "a" trong "apple"). Hiếm gặp trong thực tế với từ vựng tiếng Anh.
-- **Seed script**: hardcoded path `3000_A2_OF` trong `seed.js` nhưng thư mục thực tế là `3000_A1_OF` và `600_TOEIC_BASIC`. Sửa `dirPath` trong seed.js để seed đúng bộ từ.

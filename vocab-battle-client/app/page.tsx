@@ -64,7 +64,7 @@ export default function Home() {
   const [homeError, setHomeError] = useState("");
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL!;
     fetch(`${apiUrl}/api/categories`)
       .then((response) => response.json())
       .then((data: CategoryResponse[]) => {
@@ -82,7 +82,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL!;
     const fetchRooms = () => {
       fetch(`${apiUrl}/api/admin/rooms`)
         .then((response) => response.json())

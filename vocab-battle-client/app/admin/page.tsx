@@ -30,7 +30,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchRooms = () => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL!;
     fetch(`${apiUrl}/api/admin/rooms`)
       .then((res) => res.json())
       .then((data: RoomInfo[]) => setRooms(data))
@@ -54,7 +54,7 @@ export default function AdminPage() {
               <DoorOpen className="text-pink-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+              <h1 className="text-2xl font-bold">Admin Dashboard v1</h1>
               <p className="text-sm text-gray-400">
                 {rooms.length} phòng hoạt động
               </p>
@@ -85,9 +85,7 @@ export default function AdminPage() {
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-xl font-bold font-mono">
-                      {room.code}
-                    </h3>
+                    <h3 className="text-xl font-bold font-mono">{room.code}</h3>
                     <div className="flex items-center gap-2 mt-1">
                       <span
                         className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor[room.status] || "bg-gray-500/20 text-gray-300"}`}

@@ -1,5 +1,28 @@
-.codex
-.claude
-.agents
+# Local tools
+.codex/
+.claude/
+.agents/
+.ua/
+
+# Environment and credentials
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+.cloudflared/
+.npmrc
+**/.npmrc
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Generated files
+node_modules/
+.next/
+*.tsbuildinfo
+coverage/
 
 DEPLOY.md

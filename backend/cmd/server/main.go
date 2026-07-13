@@ -4,7 +4,6 @@ import (
 	"backend/db"
 	"backend/repository"
 	"backend/ws"
-	"cmp"
 	"log"
 	"net/http"
 	"os"
@@ -14,10 +13,8 @@ import (
 )
 
 func main() {
-	db.ConnectMongoDB(
-		cmp.Or(os.Getenv("MONGO_URI"), "mongodb://localhost:27017"),
-		cmp.Or(os.Getenv("DB_NAME"), "vocab_battle"),
-	)
+	port := mustEnv("PORT")
+	db.ConnectMongoDB(mustEnv("MONGO_URI"), mustEnv("DB_NAME"))
 
 	r := gin.Default()
 	r.SetTrustedProxies(nil)
@@ -52,8 +49,16 @@ func main() {
 		ws.ServeWs(hub, c.Writer, c.Request, roomCode, playerID, playerName, password, isHost)
 	})
 
-	log.Println("🚀 Backend đang chạy tại http://localhost:8080")
-	if err := r.Run(":8080"); err != nil {
+	log.Printf("🚀 Backend đang chạy ở cổng %s", port)
+	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("Lỗi khởi động server: %v", err)
 	}
+}
+
+func mustEnv(name string) string {
+	value := os.Getenv(name)
+	if value == "" {
+		panic("missing required environment variable: " + name)
+	}
+	return value
 }

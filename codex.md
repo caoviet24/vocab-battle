@@ -148,27 +148,27 @@ Corpus gốc có thêm ngôn ngữ và metadata như `deck_id`, `group_id`, `not
 Yêu cầu: Docker, Go theo `backend/go.mod`, Node.js phù hợp với Next.js 16 và pnpm.
 
 ```bash
-# 1. MongoDB
+# 1. Tạo cấu hình local (chỉ cần lần đầu)
+cp .env.example .env
+
+# 2. MongoDB
 docker compose up -d mongodb
 
-# 2. Seed dữ liệu (chạy từ root)
-cd data
-npm install
-node seed.js
+# 3. Cài dependency cho seed (chỉ cần lần đầu), rồi seed dữ liệu
+cd data && npm install && cd ..
+make seed
 
-# 3. Backend
-cd ../backend
-go run ./cmd/server
+# 4. Backend
+make dev-backend
 
-# 4. Frontend (terminal khác)
-cd ../vocab-battle-client
-pnpm install
-pnpm dev
+# 5. Frontend (terminal khác; chạy `pnpm install` trong thư mục client lần đầu)
+make dev-client
 ```
 
-Mặc định: frontend `http://localhost:3000`, backend `http://localhost:8080`, MongoDB `mongodb://localhost:27017`.
+Mặc định dev: frontend cổng `3000`, backend cổng `8080`. Docker production dùng
+cổng host `3001` và `8081`; toàn bộ giá trị nằm trong `.env`.
 
-Trang home/room tự dựng API/WS URL từ hostname hiện tại và cổng 8080 để dùng được qua LAN. Admin page ưu tiên `NEXT_PUBLIC_API_URL`, fallback `http://localhost:8080`.
+Frontend lấy API/WS URL bắt buộc từ biến môi trường; không còn fallback hardcode.
 
 ## Kiểm tra trước khi hoàn tất thay đổi
 

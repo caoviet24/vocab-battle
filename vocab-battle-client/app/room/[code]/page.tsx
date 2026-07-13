@@ -159,10 +159,7 @@ export default function RoomPage({
       sessionStorage.getItem(`pending_password_${roomCode}`) || "";
     const isHostFlag =
       sessionStorage.getItem(`pending_isHost_${roomCode}`) || "0";
-    const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl =
-      process.env.NEXT_PUBLIC_WS_URL ||
-      `${wsProtocol}//${window.location.hostname}:8080`;
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL!;
     const socketUrl = `${wsUrl}/ws/room/${roomCode}?playerId=${myPlayerId}&playerName=${encodeURIComponent(myName)}&password=${encodeURIComponent(password)}&isHost=${isHostFlag}`;
 
     ws.current = new WebSocket(socketUrl);

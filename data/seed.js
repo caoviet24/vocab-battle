@@ -2,8 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const { MongoClient } = require('mongodb');
 
-const uri = 'mongodb://localhost:27017';
-const dbName = 'vocab_battle';
+const uri = process.env.MONGO_URI;
+const dbName = process.env.DB_NAME;
+
+if (!uri || !dbName) {
+  throw new Error('MONGO_URI and DB_NAME environment variables are required');
+}
 
 // seed.js đang nằm ngay trong thư mục data
 const dataDir = __dirname;
