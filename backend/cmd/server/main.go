@@ -4,17 +4,23 @@ import (
 	"backend/db"
 	"backend/repository"
 	"backend/ws"
+	"cmp"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	db.ConnectMongoDB("mongodb://localhost:27017", "vocab_battle")
+	db.ConnectMongoDB(
+		cmp.Or(os.Getenv("MONGO_URI"), "mongodb://localhost:27017"),
+		cmp.Or(os.Getenv("DB_NAME"), "vocab_battle"),
+	)
 
 	r := gin.Default()
+	r.SetTrustedProxies(nil)
 	r.Use(cors.Default())
 	hub := ws.NewHub()
 

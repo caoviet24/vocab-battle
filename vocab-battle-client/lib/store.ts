@@ -9,34 +9,71 @@ export const GameStatus = {
 
 type GameStatus = (typeof GameStatus)[keyof typeof GameStatus];
 
-interface Player {
+export interface Player {
   player_id: string;
   name: string;
   score: number;
+}
+
+export interface BilingualText {
+  en?: string;
+  vi?: string;
+}
+
+export interface Phonetic {
+  text?: string;
+  audio?: string;
+  locale?: string;
+}
+
+export interface GameCard {
+  word?: string;
+  type?: string;
+  translation?: string;
+  explanation?: BilingualText;
+  example?: BilingualText;
+  phonetics?: Phonetic[];
+  image_url?: string;
+}
+
+export interface Question extends GameCard {
+  card_id: string;
+  word_length: number;
+  hint_pattern?: string;
+  round?: number;
+  total_rounds?: number;
+}
+
+export interface WinnerInfo {
+  winner_id?: string;
+  winner_name?: string;
+  card?: GameCard;
+  timeout?: boolean;
+  last_man?: boolean;
 }
 
 interface GameState {
   myPlayerId: string;
   myName: string;
   roomCode: string;
-  isHost: boolean;          // Cờ đánh dấu mình là Host
-  hasPassword: boolean;     // Phòng có mật khẩu không (thông báo cho FE)
+  isHost: boolean; // Cờ đánh dấu mình là Host
+  hasPassword: boolean; // Phòng có mật khẩu không (thông báo cho FE)
   players: Player[];
-  currentQuestion: any | null;
+  currentQuestion: Question | null;
   gameStatus: GameStatus;
-  winnerInfo: any | null;
+  winnerInfo: WinnerInfo | null;
   error: string | null;
-  readyIds: string[];       // Danh sách player_id đã bấm sẵn sàng tái đấu
-  iAmReady: boolean;        // Mình đã bấm sẵn sàng chưa
+  readyIds: string[]; // Danh sách player_id đã bấm sẵn sàng tái đấu
+  iAmReady: boolean; // Mình đã bấm sẵn sàng chưa
 
   setMyInfo: (id: string, name: string) => void;
   setRoomCode: (code: string) => void;
   setIsHost: (v: boolean) => void;
   setHasPassword: (v: boolean) => void;
   setPlayers: (players: Player[]) => void;
-  setCurrentQuestion: (q: any) => void;
+  setCurrentQuestion: (q: Question | null) => void;
   setGameStatus: (status: GameStatus) => void;
-  setWinnerInfo: (info: any) => void;
+  setWinnerInfo: (info: WinnerInfo | null) => void;
   setError: (e: string | null) => void;
   setReadyUpdate: (readyIds: string[]) => void;
   setIAmReady: (v: boolean) => void;

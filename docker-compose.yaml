@@ -1,44 +1,49 @@
-version: '3.8'
+name: vocab-battle
 
 services:
-  # 1. Cơ sở dữ liệu MongoDB
   mongodb:
     image: mongo:6
     container_name: vocab_mongo
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     restart: unless-stopped
 
-  # backend:
-  #   build:
-  #     context: ./vocab-battle-backend
-  #     dockerfile: Dockerfile
-  #   container_name: vocab_backend
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     # Sử dụng tên service "mongodb" thay vì localhost
-  #     - MONGO_URI=mongodb://mongodb:27017
-  #     - DB_NAME=vocab_battle
-  #   depends_on:
-  #     - mongodb
-  #   restart: unless-stopped
+  backend:
+    build:
+      context: ./backend
+      dockerfile: dockerfile
+    container_name: vocab_backend
+    ports:
+      - "127.0.0.1:8081:8080"
+    environment:
+      MONGO_URI: mongodb://mongodb:27017
+      DB_NAME: vocab_battle
+      GIN_MODE: release
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
 
-  # frontend:
-  #   build:
-  #     context: ./vocab-battle-client
-  #     dockerfile: Dockerfile
-  #     args:
-  #       # Đường dẫn tới server WS từ phía client (trình duyệt)
-  #       - NEXT_PUBLIC_WS_URL=ws://localhost:8080/ws
-  #   container_name: vocab_frontend
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - backend
-  #   restart: unless-stopped
+  client:
+    build:
+      context: ./vocab-battle-client
+      dockerfile: dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: https://api.urms.io.vn
+        NEXT_PUBLIC_WS_URL: wss://api.urms.io.vn
+    container_name: vocab_client
+    ports:
+      - "127.0.0.1:3001:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
 
 volumes:
   mongo_data:

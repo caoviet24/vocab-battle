@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 )
 
 type Player struct {
@@ -147,7 +148,7 @@ func (r *Room) Run() {
 				}
 
 				// ponytail: nếu host rời phòng HOÀN TOÀN (không còn connection nào) → đóng phòng
-				if !stillConnected && client.PlayerID == r.HostID && r.Status != StatusFinished {
+				if !stillConnected && client.PlayerID == r.HostID {
 					// Gửi HOST_LEFT trực tiếp đến tất cả clients (synchronous) trước khi return
 					hostLeftMsg := Message{Type: "HOST_LEFT", Payload: map[string]interface{}{
 						"message": "Chủ phòng đã thoát. Phòng đã bị đóng.",
@@ -213,7 +214,7 @@ func (r *Room) Run() {
 	}
 }
 
-// StartGameFromHost: chỉ host mới start được, và phải có >=2 người + tất cả ready
+// StartGameFromHost: chỉ host mới start được, cần >=2 người; ready chỉ áp dụng khi tái đấu
 func (r *Room) StartGameFromHost(hostID, categoryID string, total int) error {
 	r.Mutex.Lock()
 	if r.HostID != hostID {
@@ -224,12 +225,9 @@ func (r *Room) StartGameFromHost(hostID, categoryID string, total int) error {
 		r.Mutex.Unlock()
 		return errors.New("cần ít nhất 2 người chơi để bắt đầu")
 	}
-	// Kiểm tra tất cả players đã ready
-	for pid := range r.Players {
-		if !r.ReadyPlayers[pid] {
-			r.Mutex.Unlock()
-			return errors.New("chưa có tất cả người chơi sẵn sàng")
-		}
+	if !r.playersReadyForStart() {
+		r.Mutex.Unlock()
+		return errors.New("chưa có tất cả người chơi sẵn sàng")
 	}
 	// Reset ready state cho lần sau
 	r.ReadyPlayers = make(map[string]bool)
@@ -256,6 +254,18 @@ func (r *Room) StartGameFromHost(hostID, categoryID string, total int) error {
 
 	r.SendNextQuestion()
 	return nil
+}
+
+func (r *Room) playersReadyForStart() bool {
+	if r.Status != StatusFinished {
+		return true
+	}
+	for pid := range r.Players {
+		if !r.ReadyPlayers[pid] {
+			return false
+		}
+	}
+	return true
 }
 
 func (r *Room) StartGame(categoryID string, total int) {
@@ -321,25 +331,17 @@ func (r *Room) SendNextQuestion() {
 		Vi: maskWordInText(currentCard.Example.Vi, currentCard.Word),
 	}
 
-	// Chỉ gửi phonetic TEXT (không audio) để hiện ngay khi loa xuất hiện
-	// ponytail: mask phonetic text nếu nó chứa từ cần đoán
-	phoneticText := ""
-	if len(currentCard.Phonetics) > 0 && currentCard.Phonetics[0].Text != "" {
-		phoneticText = maskWordInText(currentCard.Phonetics[0].Text, currentCard.Word)
-	}
-
 	roundInfo := map[string]interface{}{
-		"card_id":        currentCard.ID.Hex(),
-		"type":           currentCard.Type,
-		"explanation":    maskedExplanation,
-		"translation":    currentCard.Translation,
-		"example":        maskedExample,
-		"phonetics_text": phoneticText, // Text phonetic hiện ngay (audio chỉ khi bấm)
-		"image_url":      currentCard.ImageURL,
-		"word_length":    len(currentCard.Word),
-		"hint_pattern":   generateHintPattern(currentCard.Word),
-		"round":          r.CurrentQuestionIndex + 1,
-		"total_rounds":   len(r.CurrentCards),
+		"card_id":      currentCard.ID.Hex(),
+		"type":         currentCard.Type,
+		"explanation":  maskedExplanation,
+		"translation":  currentCard.Translation,
+		"example":      maskedExample,
+		"image_url":    currentCard.ImageURL,
+		"word_length":  len([]rune(currentCard.Word)),
+		"hint_pattern": generateHintPattern(currentCard.Word),
+		"round":        r.CurrentQuestionIndex + 1,
+		"total_rounds": len(r.CurrentCards),
 	}
 	r.Broadcast <- Message{Type: "NEXT_QUESTION", Payload: roundInfo}
 }
@@ -369,16 +371,24 @@ func (r *Room) SendPhonetics(playerID string) {
 	}
 }
 
-// generateHintPattern tạo gợi ý dần, reveal ~30% chữ cái (mỗi 3 ký tự)
+// generateHintPattern giữ khoảng trắng và chỉ cung cấp tối đa khoảng 1/3 đáp án.
 func generateHintPattern(word string) string {
 	runes := []rune(word)
 	result := make([]rune, len(runes))
-	for i := range runes {
-		if i%3 == 0 && i > 0 { // Reveal vị trí 3, 6, 9...
-			result[i] = runes[i]
-		} else {
-			result[i] = '_'
+	letterPositions := make([]int, 0, len(runes))
+	for i, char := range runes {
+		if unicode.IsSpace(char) {
+			result[i] = char
+			continue
 		}
+		result[i] = '_'
+		letterPositions = append(letterPositions, i)
+	}
+
+	revealCount := min((len(letterPositions)+2)/3, len(letterPositions)-1)
+	for step := 1; step <= revealCount; step++ {
+		position := letterPositions[step*len(letterPositions)/(revealCount+1)]
+		result[position] = runes[position]
 	}
 	return string(result)
 }
