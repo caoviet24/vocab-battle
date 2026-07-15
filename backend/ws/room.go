@@ -94,8 +94,15 @@ func (r *Room) Run() {
 		select {
 		case client := <-r.Register:
 			r.Mutex.Lock()
-			// Nếu player này đã tồn tại (reconnect) thì KHÔNG broadcast JOINED,
-			// chỉ gửi lại cho họ danh sách hiện tại để đồng bộ
+			// Mỗi player chỉ giữ một connection hoạt động trong room.
+			for existing := range r.Clients {
+				if existing.PlayerID == client.PlayerID {
+					delete(r.Clients, existing)
+					existing.Close()
+				}
+			}
+
+			// Reconnect không tạo player hoặc broadcast JOINED lần nữa.
 			isNewPlayer := false
 			if _, exists := r.Players[client.PlayerID]; !exists {
 				isNewPlayer = true
@@ -119,16 +126,16 @@ func (r *Room) Run() {
 			// Chỉ broadcast JOINED khi có người MỚI thực sự, để các user khác cập nhật UI
 			if isNewPlayer {
 				r.Broadcast <- Message{Type: "PLAYER_JOINED", Payload: playerList}
+				r.Hub.NotifyLobbyChange() // player_count thay đổi → lobby list cần refresh
 			}
 
 		case client := <-r.Unregister:
 			r.Mutex.Lock()
 			if _, ok := r.Clients[client]; ok {
 				delete(r.Clients, client)
-				close(client.Send)
+				client.Close()
 
-				// Chỉ xóa player khỏi Players map nếu không còn client nào khác của player này
-				// (ponytail: player có thể có nhiều connections khi reload trang, reconnect)
+				// Không xóa player nếu unregister này thuộc connection cũ vừa được thay thế.
 				stillConnected := false
 				for c := range r.Clients {
 					if c.PlayerID == client.PlayerID {
@@ -157,7 +164,7 @@ func (r *Room) Run() {
 						select {
 						case c.Send <- hostLeftMsg:
 						default:
-							close(c.Send)
+							c.Close()
 							delete(r.Clients, c)
 						}
 					}
@@ -188,11 +195,13 @@ func (r *Room) Run() {
 						r.Broadcast <- Message{Type: "LAST_MAN_STANDING", Payload: payload}
 						break
 					}
+					r.Hub.NotifyLobbyChange() // status → LOBBY
 				} else {
 					r.Mutex.Unlock()
 					// Chỉ broadcast PLAYER_LEFT nếu player thực sự đã rời (không còn connection nào)
 					if !stillConnected {
 						r.Broadcast <- Message{Type: "PLAYER_LEFT", Payload: playerList}
+						r.Hub.NotifyLobbyChange() // player_count thay đổi
 					}
 				}
 			} else {
@@ -205,7 +214,7 @@ func (r *Room) Run() {
 				select {
 				case client.Send <- message:
 				default:
-					close(client.Send)
+					client.Close()
 					delete(r.Clients, client)
 				}
 			}
@@ -252,6 +261,7 @@ func (r *Room) StartGameFromHost(hostID, categoryID string, total int) error {
 	r.QuestionLocked = false
 	r.Mutex.Unlock()
 
+	r.Hub.NotifyLobbyChange() // status → PLAYING
 	r.SendNextQuestion()
 	return nil
 }
@@ -313,6 +323,7 @@ func (r *Room) SendNextQuestion() {
 		playerList := r.GetPlayersList()
 		r.Mutex.Unlock()
 		r.Broadcast <- Message{Type: "GAME_OVER", Payload: playerList}
+		r.Hub.NotifyLobbyChange() // status → FINISHED
 		return
 	}
 

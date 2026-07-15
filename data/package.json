@@ -1,6 +1,7 @@
 {
   "name": "data",
   "version": "1.0.0",
+  "types": "module",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -11,6 +12,9 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "mongodb": "^7.5.0"
+    "dotenv": "^17.4.2",
+    "mongodb": "^7.5.0",
+    "stream-chain": "^4.2.5",
+    "stream-json": "^3.5.0"
   }
 }

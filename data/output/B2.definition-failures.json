@@ -1,0 +1,86 @@
+[
+  {
+    "status": "failed",
+    "id": "1181",
+    "word": "core",
+    "type": "adjective",
+    "availableTypes": [
+      "noun",
+      "verb"
+    ],
+    "reason": "Không có definition khớp value.type=\"adjective\". API hiện có loại từ: noun, verb.",
+    "processedAt": "2026-07-15T02:27:37.013Z"
+  },
+  {
+    "status": "failed",
+    "id": "1279",
+    "word": "cue",
+    "type": "noun",
+    "reason": "Dictionary API không tìm thấy từ.",
+    "processedAt": "2026-07-15T02:27:53.329Z"
+  },
+  {
+    "status": "failed",
+    "id": "1626",
+    "word": "dozen",
+    "type": "determiner",
+    "availableTypes": [
+      "noun"
+    ],
+    "reason": "Không có definition khớp value.type=\"determiner\". API hiện có loại từ: noun.",
+    "processedAt": "2026-07-15T02:28:48.601Z"
+  },
+  {
+    "status": "failed",
+    "id": "2062",
+    "word": "fellow",
+    "type": "adjective",
+    "availableTypes": [
+      "noun",
+      "verb"
+    ],
+    "reason": "Không có definition khớp value.type=\"adjective\". API hiện có loại từ: noun, verb.",
+    "processedAt": "2026-07-15T02:29:47.359Z"
+  },
+  {
+    "status": "failed",
+    "id": "2492",
+    "word": "hell",
+    "type": "noun",
+    "reason": "Dictionary API không tìm thấy từ.",
+    "processedAt": "2026-07-15T02:30:39.674Z"
+  },
+  {
+    "status": "failed",
+    "id": "3120",
+    "word": "long-term",
+    "type": "adverb",
+    "availableTypes": [
+      "adjective"
+    ],
+    "reason": "Không có definition khớp value.type=\"adverb\". API hiện có loại từ: adjective.",
+    "processedAt": "2026-07-15T02:32:02.607Z"
+  },
+  {
+    "status": "failed",
+    "id": "3849",
+    "word": "phase",
+    "type": "noun",
+    "reason": "Dictionary API không tìm thấy từ.",
+    "processedAt": "2026-07-15T02:33:39.298Z"
+  },
+  {
+    "status": "failed",
+    "id": "3922",
+    "word": "plus",
+    "type": "conjunction",
+    "availableTypes": [
+      "noun",
+      "verb",
+      "adjective",
+      "preposition"
+    ],
+    "reason": "Không có definition khớp value.type=\"conjunction\". API hiện có loại từ: noun, verb, adjective, preposition.",
+    "processedAt": "2026-07-15T02:35:01.545Z"
+  }
+]

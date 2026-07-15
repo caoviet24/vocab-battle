@@ -1,12 +1,12 @@
-const fs = require('fs');
-const path = require('path');
-const { MongoClient } = require('mongodb');
+const fs = require("fs");
+const path = require("path");
+const { MongoClient } = require("mongodb");
 
-const uri = process.env.MONGO_URI;
-const dbName = process.env.DB_NAME;
+const uri = "mongodb://127.0.0.1:27017";
+const dbName = "vocab_battle";
 
 if (!uri || !dbName) {
-  throw new Error('MONGO_URI and DB_NAME environment variables are required');
+  throw new Error("MONGO_URI and DB_NAME environment variables are required");
 }
 
 // seed.js đang nằm ngay trong thư mục data
@@ -17,16 +17,20 @@ const dataDir = __dirname;
  */
 function getCategoryDescription(categoryName) {
   const descriptions = {
-    '1000_WORD_COMMOM': 'Bộ 1000 từ vựng tiếng Anh thông dụng',
-    '3000_A1_OF': 'Bộ từ vựng tiếng Anh trình độ A1',
-    '3000_A2_OF': 'Bộ từ vựng tiếng Anh trình độ A2',
-    '600_IELTS_BASIC': 'Bộ 600 từ vựng IELTS cơ bản',
-    '600_TOEIC_BASIC': 'Bộ 600 từ vựng TOEIC cơ bản',
-    'BAND_4_5_IELTS': 'Bộ từ vựng IELTS Band 4.5'
+    "1000_WORD_COMMOM": "Bộ 1000 từ vựng tiếng Anh thông dụng",
+    "3000_A1_OF": "Bộ từ vựng tiếng Anh trình độ A1",
+    "3000_A2_OF": "Bộ từ vựng tiếng Anh trình độ A2",
+    "600_IELTS_BASIC": "Bộ 600 từ vựng IELTS cơ bản",
+    "600_TOEIC_BASIC": "Bộ 600 từ vựng TOEIC cơ bản",
+    BAND_4_5_IELTS: "Bộ từ vựng IELTS Band 4.5",
+    "900_B1": "Bộ từ vựng tiếng anh trình độ B1",
+    "1600_B2": "Bộ từ vựng tiếng anh trình độ B2",
   };
 
-  return descriptions[categoryName]
-    || `Bộ từ vựng ${categoryName.replaceAll('_', ' ')}`;
+  return (
+    descriptions[categoryName] ||
+    `Bộ từ vựng ${categoryName.replaceAll("_", " ")}`
+  );
 }
 
 /**
@@ -37,7 +41,7 @@ function getJsonFilesRecursive(directoryPath) {
   let jsonFiles = [];
 
   const entries = fs.readdirSync(directoryPath, {
-    withFileTypes: true
+    withFileTypes: true,
   });
 
   for (const entry of entries) {
@@ -48,7 +52,7 @@ function getJsonFilesRecursive(directoryPath) {
       continue;
     }
 
-    if (entry.isFile() && entry.name.toLowerCase().endsWith('.json')) {
+    if (entry.isFile() && entry.name.toLowerCase().endsWith(".json")) {
       jsonFiles.push(fullPath);
     }
   }
@@ -61,41 +65,38 @@ function getJsonFilesRecursive(directoryPath) {
  */
 function transformCard(card, categoryId, sourceFile) {
   return {
-    word: String(card.word || '').trim(),
-    type: card.type || '',
+    word: String(card.word || "").trim(),
+    type: card.type || "",
 
     explanation: {
-      en: card.explanation?.en || '',
-      vi: card.explanation?.vi || ''
+      en: card.explanation?.en || "",
+      vi: card.explanation?.vi || "",
     },
 
-    translation:
-      card.translation?.vi
-      || card.translation
-      || '',
+    translation: card.translation?.vi || card.translation || "",
 
     example: {
-      en: card.example?.en || '',
-      vi: card.example?.vi || ''
+      en: card.example?.en || "",
+      vi: card.example?.vi || "",
     },
 
     phonetics: Array.isArray(card.phonetics)
-      ? card.phonetics.map(phonetic => ({
-          text: phonetic.text || '',
-          audio: phonetic.audio || '',
-          locale: phonetic.locale || ''
+      ? card.phonetics.map((phonetic) => ({
+          text: phonetic.text || "",
+          audio: phonetic.audio || "",
+          locale: phonetic.locale || "",
         }))
       : [],
 
-    image_url: card.image_url || '',
-    difficulty: card.difficulty || 'medium',
+    image_url: card.image_url || "",
+    difficulty: card.difficulty || "",
 
     category_id: categoryId,
 
     // Lưu lại tên file nguồn để tiện kiểm tra dữ liệu
     source_file: sourceFile,
 
-    updated_at: new Date()
+    updated_at: new Date(),
   };
 }
 
@@ -107,22 +108,22 @@ async function getOrCreateCategory(categoryCollection, categoryName) {
 
   const result = await categoryCollection.findOneAndUpdate(
     {
-      name: categoryName
+      name: categoryName,
     },
     {
       $set: {
         description: getCategoryDescription(categoryName),
-        updated_at: now
+        updated_at: now,
       },
       $setOnInsert: {
         name: categoryName,
-        created_at: now
-      }
+        created_at: now,
+      },
     },
     {
       upsert: true,
-      returnDocument: 'after'
-    }
+      returnDocument: "after",
+    },
   );
 
   return result;
@@ -135,16 +136,13 @@ async function importCategoryFolder(
   folderPath,
   categoryName,
   categoryCollection,
-  cardCollection
+  cardCollection,
 ) {
-  console.log('\n==================================================');
+  console.log("\n==================================================");
   console.log(`📁 Đang xử lý category: ${categoryName}`);
   console.log(`📂 Đường dẫn: ${folderPath}`);
 
-  const category = await getOrCreateCategory(
-    categoryCollection,
-    categoryName
-  );
+  const category = await getOrCreateCategory(categoryCollection, categoryName);
 
   if (!category) {
     throw new Error(`Không thể tạo hoặc tìm category ${categoryName}`);
@@ -159,13 +157,13 @@ async function importCategoryFolder(
   console.log(`🔍 Tìm thấy ${jsonFiles.length} file JSON`);
 
   if (jsonFiles.length === 0) {
-    console.log('⚠️ Category này không có file JSON');
+    console.log("⚠️ Category này không có file JSON");
     return {
       categoryName,
       fileCount: 0,
       cardCount: 0,
       insertedCount: 0,
-      updatedCount: 0
+      updatedCount: 0,
     };
   }
 
@@ -177,7 +175,7 @@ async function importCategoryFolder(
     const fileName = path.basename(filePath);
 
     try {
-      const rawData = fs.readFileSync(filePath, 'utf8');
+      const rawData = fs.readFileSync(filePath, "utf8");
       const parsedData = JSON.parse(rawData);
 
       /*
@@ -201,19 +199,15 @@ async function importCategoryFolder(
 
       if (!Array.isArray(oldCards)) {
         console.error(
-          `❌ File ${fileName} không phải mảng JSON hoặc không có trường cards`
+          `❌ File ${fileName} không phải mảng JSON hoặc không có trường cards`,
         );
         continue;
       }
 
       const validCards = oldCards
-        .filter(card => card && String(card.word || '').trim())
-        .map(card =>
-          transformCard(
-            card,
-            categoryId,
-            path.relative(dataDir, filePath)
-          )
+        .filter((card) => card && String(card.word || "").trim())
+        .map((card) =>
+          transformCard(card, categoryId, path.relative(dataDir, filePath)),
         );
 
       if (validCards.length === 0) {
@@ -228,38 +222,35 @@ async function importCategoryFolder(
        *
        * Nhờ đó chạy lại seed.js không bị nhân đôi dữ liệu.
        */
-      const operations = validCards.map(card => ({
+      const operations = validCards.map((card) => ({
         updateOne: {
           filter: {
             word: card.word,
-            category_id: categoryId
+            category_id: categoryId,
           },
           update: {
             $set: card,
             $setOnInsert: {
-              created_at: new Date()
-            }
+              created_at: new Date(),
+            },
           },
-          upsert: true
-        }
+          upsert: true,
+        },
       }));
 
-      const result = await cardCollection.bulkWrite(
-        operations,
-        {
-          ordered: false
-        }
-      );
+      const result = await cardCollection.bulkWrite(operations, {
+        ordered: false,
+      });
 
       totalCards += validCards.length;
       insertedCount += result.upsertedCount || 0;
       updatedCount += result.modifiedCount || 0;
 
       console.log(
-        `   ✅ ${fileName}: `
-        + `${validCards.length} từ, `
-        + `thêm mới ${result.upsertedCount || 0}, `
-        + `cập nhật ${result.modifiedCount || 0}`
+        `   ✅ ${fileName}: ` +
+          `${validCards.length} từ, ` +
+          `thêm mới ${result.upsertedCount || 0}, ` +
+          `cập nhật ${result.modifiedCount || 0}`,
       );
     } catch (error) {
       console.error(`   ❌ Lỗi file ${fileName}: ${error.message}`);
@@ -277,7 +268,7 @@ async function importCategoryFolder(
     fileCount: jsonFiles.length,
     cardCount: totalCards,
     insertedCount,
-    updatedCount
+    updatedCount,
   };
 }
 
@@ -287,31 +278,28 @@ async function seedData() {
   try {
     await client.connect();
 
-    console.log('✅ Đã kết nối tới MongoDB');
+    console.log("✅ Đã kết nối tới MongoDB");
     console.log(`📂 Thư mục dữ liệu: ${dataDir}`);
 
     const db = client.db(dbName);
-    const categoryCollection = db.collection('categories');
-    const cardCollection = db.collection('cards');
+    const categoryCollection = db.collection("categories");
+    const cardCollection = db.collection("cards");
 
     /*
      * Tạo index để bảo đảm:
      * - Tên category không bị trùng.
      * - Một word không bị trùng trong cùng category.
      */
-    await categoryCollection.createIndex(
-      { name: 1 },
-      { unique: true }
-    );
+    await categoryCollection.createIndex({ name: 1 }, { unique: true });
 
     await cardCollection.createIndex(
       {
         category_id: 1,
-        word: 1
+        word: 1,
       },
       {
-        unique: true
-      }
+        unique: true,
+      },
     );
 
     /*
@@ -319,25 +307,26 @@ async function seedData() {
      * node_modules sẽ bị bỏ qua.
      */
     const ignoredDirectories = new Set([
-      'node_modules',
-      '.git',
-      '.idea',
-      '.vscode'
+      "node_modules",
+      ".git",
+      ".idea",
+      ".vscode",
+      "OXFORD",
+      "merge",
+      "output",
     ]);
 
     const categoryFolders = fs
       .readdirSync(dataDir, { withFileTypes: true })
-      .filter(entry => {
+      .filter((entry) => {
         return (
-          entry.isDirectory()
-          && !ignoredDirectories.has(entry.name)
-          && !entry.name.startsWith('.')
+          entry.isDirectory() &&
+          !ignoredDirectories.has(entry.name) &&
+          !entry.name.startsWith(".")
         );
       });
 
-    console.log(
-      `🔍 Tìm thấy ${categoryFolders.length} thư mục category`
-    );
+    console.log(`🔍 Tìm thấy ${categoryFolders.length} thư mục category`);
 
     const summaries = [];
 
@@ -358,15 +347,15 @@ async function seedData() {
         folderPath,
         categoryName,
         categoryCollection,
-        cardCollection
+        cardCollection,
       );
 
       summaries.push(summary);
     }
 
-    console.log('\n==================================================');
-    console.log('🎉 HOÀN THÀNH IMPORT DỮ LIỆU');
-    console.log('==================================================');
+    console.log("\n==================================================");
+    console.log("🎉 HOÀN THÀNH IMPORT DỮ LIỆU");
+    console.log("==================================================");
 
     let totalFiles = 0;
     let totalCards = 0;
@@ -375,10 +364,10 @@ async function seedData() {
 
     for (const summary of summaries) {
       console.log(
-        `📁 ${summary.categoryName}: `
-        + `${summary.cardCount} card, `
-        + `thêm ${summary.insertedCount}, `
-        + `cập nhật ${summary.updatedCount}`
+        `📁 ${summary.categoryName}: ` +
+          `${summary.cardCount} card, ` +
+          `thêm ${summary.insertedCount}, ` +
+          `cập nhật ${summary.updatedCount}`,
       );
 
       totalFiles += summary.fileCount;
@@ -387,17 +376,17 @@ async function seedData() {
       totalUpdated += summary.updatedCount;
     }
 
-    console.log('--------------------------------------------------');
+    console.log("--------------------------------------------------");
     console.log(`📂 Tổng file JSON: ${totalFiles}`);
     console.log(`🗂️ Tổng card xử lý: ${totalCards}`);
     console.log(`➕ Tổng card thêm mới: ${totalInserted}`);
     console.log(`♻️ Tổng card cập nhật: ${totalUpdated}`);
   } catch (error) {
-    console.error('❌ Có lỗi xảy ra:', error);
+    console.error("❌ Có lỗi xảy ra:", error);
     process.exitCode = 1;
   } finally {
     await client.close();
-    console.log('🔌 Đã ngắt kết nối MongoDB');
+    console.log("🔌 Đã ngắt kết nối MongoDB");
   }
 }
 

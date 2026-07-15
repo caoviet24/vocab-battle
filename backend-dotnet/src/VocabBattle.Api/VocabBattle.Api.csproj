@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="../VocabBattle.Application/VocabBattle.Application.csproj" />
+    <ProjectReference Include="../VocabBattle.Infrastructure/VocabBattle.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

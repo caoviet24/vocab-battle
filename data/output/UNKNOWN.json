@@ -1,0 +1,210 @@
+[
+  {
+    "id": 47,
+    "value": {
+      "word": "accounting",
+      "href": "https://www.oxfordlearnersdictionaries.com/definition/english/accounting",
+      "type": "noun",
+      "level": " ",
+      "us": {
+        "mp3": "https://www.oxfordlearnersdictionaries.comundefined",
+        "ogg": "https://www.oxfordlearnersdictionaries.comundefined"
+      },
+      "uk": {
+        "mp3": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron/a/acc/accou/accounting__us_1.mp3",
+        "ogg": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron_ogg/a/acc/accou/accounting__us_1.ogg"
+      },
+      "phonetics": { "us": "/əˈkaʊntɪŋ/", "uk": "/əˈkaʊntɪŋ/" },
+      "examples": ["a career in accounting", "accounting methods"]
+    }
+  },
+  {
+    "id": 233,
+    "value": {
+      "word": "angrily",
+      "href": "https://www.oxfordlearnersdictionaries.com/definition/english/angrily",
+      "type": "adverb",
+      "level": " ",
+      "us": {
+        "mp3": "https://www.oxfordlearnersdictionaries.comundefined",
+        "ogg": "https://www.oxfordlearnersdictionaries.comundefined"
+      },
+      "uk": {
+        "mp3": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron/a/ang/angri/angrily__us_1.mp3",
+        "ogg": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron_ogg/a/ang/angri/angrily__us_1.ogg"
+      },
+      "phonetics": { "us": "/ˈæŋɡrəli/", "uk": "/ˈæŋɡrəli/" },
+      "examples": [
+        "Some senators reacted angrily to the president's remarks.",
+        "He swore angrily.",
+        "She angrily rejected any suggestion of a cover-up.",
+        "‘This isn't fair!’ she shouted angrily. ",
+        "The president angrily denounced the coup as illegal."
+      ]
+    }
+  },
+  {
+    "id": 889,
+    "value": {
+      "word": "cleaning",
+      "href": "https://www.oxfordlearnersdictionaries.com/definition/english/cleaning",
+      "type": "noun",
+      "level": " ",
+      "us": {
+        "mp3": "https://www.oxfordlearnersdictionaries.comundefined",
+        "ogg": "https://www.oxfordlearnersdictionaries.comundefined"
+      },
+      "uk": {
+        "mp3": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron/c/cle/clean/cleaning__us_1.mp3",
+        "ogg": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron_ogg/c/cle/clean/cleaning__us_1.ogg"
+      },
+      "phonetics": { "us": "/ˈkliːnɪŋ/", "uk": "/ˈkliːnɪŋ/" },
+      "examples": ["They pay someone to do the cleaning."]
+    }
+  },
+  {
+    "id": 2058,
+    "value": {
+      "word": "feeding",
+      "href": "https://www.oxfordlearnersdictionaries.com/definition/english/feeding",
+      "type": "noun",
+      "level": " ",
+      "us": {
+        "mp3": "https://www.oxfordlearnersdictionaries.comundefined",
+        "ogg": "https://www.oxfordlearnersdictionaries.comundefined"
+      },
+      "uk": {
+        "mp3": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron/f/fee/feedi/feeding__us_1.mp3",
+        "ogg": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron_ogg/f/fee/feedi/feeding__us_1.ogg"
+      },
+      "phonetics": { "us": "/ˈfiːdɪŋ/", "uk": "/ˈfiːdɪŋ/" },
+      "examples": [
+        "breast/bottle feeding",
+        "The cubs' feeding time at the zoo is 2 p.m."
+      ]
+    }
+  },
+  {
+    "id": 3176,
+    "value": {
+      "word": "major",
+      "href": "https://www.oxfordlearnersdictionaries.com/definition/english/major_2",
+      "type": "noun",
+      "level": " ",
+      "us": {
+        "mp3": "https://www.oxfordlearnersdictionaries.comundefined",
+        "ogg": "https://www.oxfordlearnersdictionaries.comundefined"
+      },
+      "uk": {
+        "mp3": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron/m/maj/major/major__us_2.mp3",
+        "ogg": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron_ogg/m/maj/major/major__us_2.ogg"
+      },
+      "phonetics": { "us": "/ˈmeɪdʒər/", "uk": "/ˈmeɪdʒə(r)/" },
+      "examples": ["Major Smith", "He's a major in the US army."]
+    }
+  },
+  {
+    "id": 47,
+    "value": {
+      "word": "accounting",
+      "href": "https://www.oxfordlearnersdictionaries.com/definition/english/accounting",
+      "type": "noun",
+      "level": " ",
+      "us": {
+        "mp3": "https://www.oxfordlearnersdictionaries.comundefined",
+        "ogg": "https://www.oxfordlearnersdictionaries.comundefined"
+      },
+      "uk": {
+        "mp3": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron/a/acc/accou/accounting__us_1.mp3",
+        "ogg": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron_ogg/a/acc/accou/accounting__us_1.ogg"
+      },
+      "phonetics": { "us": "/əˈkaʊntɪŋ/", "uk": "/əˈkaʊntɪŋ/" },
+      "examples": ["a career in accounting", "accounting methods"]
+    }
+  },
+  {
+    "id": 233,
+    "value": {
+      "word": "angrily",
+      "href": "https://www.oxfordlearnersdictionaries.com/definition/english/angrily",
+      "type": "adverb",
+      "level": " ",
+      "us": {
+        "mp3": "https://www.oxfordlearnersdictionaries.comundefined",
+        "ogg": "https://www.oxfordlearnersdictionaries.comundefined"
+      },
+      "uk": {
+        "mp3": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron/a/ang/angri/angrily__us_1.mp3",
+        "ogg": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron_ogg/a/ang/angri/angrily__us_1.ogg"
+      },
+      "phonetics": { "us": "/ˈæŋɡrəli/", "uk": "/ˈæŋɡrəli/" },
+      "examples": [
+        "Some senators reacted angrily to the president's remarks.",
+        "He swore angrily.",
+        "She angrily rejected any suggestion of a cover-up.",
+        "‘This isn't fair!’ she shouted angrily. ",
+        "The president angrily denounced the coup as illegal."
+      ]
+    }
+  },
+  {
+    "id": 889,
+    "value": {
+      "word": "cleaning",
+      "href": "https://www.oxfordlearnersdictionaries.com/definition/english/cleaning",
+      "type": "noun",
+      "level": " ",
+      "us": {
+        "mp3": "https://www.oxfordlearnersdictionaries.comundefined",
+        "ogg": "https://www.oxfordlearnersdictionaries.comundefined"
+      },
+      "uk": {
+        "mp3": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron/c/cle/clean/cleaning__us_1.mp3",
+        "ogg": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron_ogg/c/cle/clean/cleaning__us_1.ogg"
+      },
+      "phonetics": { "us": "/ˈkliːnɪŋ/", "uk": "/ˈkliːnɪŋ/" },
+      "examples": ["They pay someone to do the cleaning."]
+    }
+  },
+  {
+    "id": 2058,
+    "value": {
+      "word": "feeding",
+      "href": "https://www.oxfordlearnersdictionaries.com/definition/english/feeding",
+      "type": "noun",
+      "level": " ",
+      "us": {
+        "mp3": "https://www.oxfordlearnersdictionaries.comundefined",
+        "ogg": "https://www.oxfordlearnersdictionaries.comundefined"
+      },
+      "uk": {
+        "mp3": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron/f/fee/feedi/feeding__us_1.mp3",
+        "ogg": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron_ogg/f/fee/feedi/feeding__us_1.ogg"
+      },
+      "phonetics": { "us": "/ˈfiːdɪŋ/", "uk": "/ˈfiːdɪŋ/" },
+      "examples": [
+        "breast/bottle feeding",
+        "The cubs' feeding time at the zoo is 2 p.m."
+      ]
+    }
+  },
+  {
+    "id": 3176,
+    "value": {
+      "word": "major",
+      "href": "https://www.oxfordlearnersdictionaries.com/definition/english/major_2",
+      "type": "noun",
+      "level": " ",
+      "us": {
+        "mp3": "https://www.oxfordlearnersdictionaries.comundefined",
+        "ogg": "https://www.oxfordlearnersdictionaries.comundefined"
+      },
+      "uk": {
+        "mp3": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron/m/maj/major/major__us_2.mp3",
+        "ogg": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron_ogg/m/maj/major/major__us_2.ogg"
+      },
+      "phonetics": { "us": "/ˈmeɪdʒər/", "uk": "/ˈmeɪdʒə(r)/" },
+      "examples": ["Major Smith", "He's a major in the US army."]
+    }
+  }
+]

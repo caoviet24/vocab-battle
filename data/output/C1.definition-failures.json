@@ -1,0 +1,97 @@
+[
+  {
+    "status": "failed",
+    "id": "498",
+    "word": "behalf",
+    "type": "noun",
+    "reason": "Dictionary API không tìm thấy từ.",
+    "processedAt": "2026-07-15T02:41:29.003Z"
+  },
+  {
+    "status": "failed",
+    "id": "1607",
+    "word": "dose",
+    "type": "noun",
+    "reason": "Dictionary API không tìm thấy từ.",
+    "processedAt": "2026-07-15T02:43:59.203Z"
+  },
+  {
+    "status": "failed",
+    "id": "2966",
+    "word": "latter",
+    "type": "noun",
+    "availableTypes": [
+      "adjective"
+    ],
+    "reason": "Không có definition khớp value.type=\"noun\". API hiện có loại từ: adjective.",
+    "processedAt": "2026-07-15T02:46:58.534Z"
+  },
+  {
+    "status": "failed",
+    "id": "3484",
+    "word": "net",
+    "type": "adjective",
+    "reason": "Dictionary API không tìm thấy từ.",
+    "processedAt": "2026-07-15T02:48:21.219Z"
+  },
+  {
+    "status": "failed",
+    "id": "4241",
+    "word": "rape",
+    "type": "noun",
+    "reason": "Dictionary API không tìm thấy từ.",
+    "processedAt": "2026-07-15T02:50:26.379Z"
+  },
+  {
+    "status": "failed",
+    "id": "4242",
+    "word": "rape",
+    "type": "verb",
+    "reason": "Dictionary API không tìm thấy từ.",
+    "processedAt": "2026-07-15T02:50:26.633Z"
+  },
+  {
+    "status": "failed",
+    "id": "5093",
+    "word": "strive",
+    "type": "verb",
+    "availableTypes": [
+      "noun"
+    ],
+    "reason": "Không có definition khớp value.type=\"verb\". API hiện có loại từ: noun.",
+    "processedAt": "2026-07-15T02:52:39.628Z"
+  },
+  {
+    "status": "failed",
+    "id": "5151",
+    "word": "suicide",
+    "type": "noun",
+    "reason": "Dictionary API không tìm thấy từ.",
+    "processedAt": "2026-07-15T02:52:44.747Z"
+  },
+  {
+    "status": "failed",
+    "id": "5806",
+    "word": "whatever",
+    "type": "adverb",
+    "availableTypes": [
+      "adjective",
+      "pronoun",
+      "interjection"
+    ],
+    "reason": "Không có definition khớp value.type=\"adverb\". API hiện có loại từ: adjective, pronoun, interjection.",
+    "processedAt": "2026-07-15T02:54:38.484Z"
+  },
+  {
+    "status": "failed",
+    "id": "5809",
+    "word": "whatsoever",
+    "type": "adverb",
+    "availableTypes": [
+      "adjective",
+      "pronoun"
+    ],
+    "reason": "Không có definition khớp value.type=\"adverb\". API hiện có loại từ: adjective, pronoun.",
+    "processedAt": "2026-07-15T02:54:38.773Z"
+  }
+]

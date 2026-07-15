@@ -1,8 +1,0 @@
-{
-  "env": {
-    "ANTHROPIC_AUTH_TOKEN": "sk-7f2da4c5779cb73eed59e67b9ebe0aef650767748d7a7be440c1536db99c49cc",
-    "ANTHROPIC_BASE_URL": "http://localhost:20128/v1",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "nvidia/minimaxai/minimax-m3",
-    "ENABLE_TOOL_SEARCH": "true"
-  }
-}

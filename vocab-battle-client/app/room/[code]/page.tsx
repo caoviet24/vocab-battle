@@ -1,7 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, use, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FormEvent,
+  use,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   AlertCircle,
@@ -64,6 +72,12 @@ const statusCopy = {
   FINISHED: "Kết quả",
 } as const;
 
+const imageGoat = [
+  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfHamsv62d-POKkuPTE831SLJRLK65dbPUpQTjbnnaSg&s=10",
+  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpxP2MDm_pJSEsDemp5_L_O84xM5DwShw8afmYnFPaiQ&s=10",
+  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTGnz9PkjM3e681O_G07WWzIF7jBfPqa-ryCwususEQ7w&s=10",
+];
+
 export default function RoomPage({
   params,
 }: {
@@ -76,6 +90,7 @@ export default function RoomPage({
   const ws = useRef<WebSocket | null>(null);
   const isMountedRef = useRef(true);
   const answerInputRef = useRef<HTMLInputElement>(null);
+  const phoneticsAudioRef = useRef<HTMLAudioElement | null>(null);
   const {
     myPlayerId,
     myName,
@@ -113,6 +128,12 @@ export default function RoomPage({
   );
   const champion = sortedPlayers[0];
   const allReady = players.length >= 2 && readyIds.length === players.length;
+  const playPhonetics = useCallback(() => {
+    const audio = phoneticsAudioRef.current;
+    if (!audio) return;
+    audio.currentTime = 0;
+    void audio.play().catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     if (gameStatus !== "PLAYING" || !currentQuestion || winnerInfo) return;
@@ -146,6 +167,26 @@ export default function RoomPage({
   }, [timeRemaining, gameStatus, currentQuestion, winnerInfo]);
 
   useEffect(() => {
+    const audioUrl = phoneticsData?.[0]?.audio;
+    if (!audioUrl) return;
+
+    const audio = new Audio(audioUrl);
+    phoneticsAudioRef.current = audio;
+    playPhonetics();
+    const replayPhonetics = (event: KeyboardEvent) => {
+      if (event.key !== "`" || event.repeat) return;
+      event.preventDefault();
+      playPhonetics();
+    };
+    window.addEventListener("keydown", replayPhonetics);
+    return () => {
+      window.removeEventListener("keydown", replayPhonetics);
+      audio.pause();
+      phoneticsAudioRef.current = null;
+    };
+  }, [phoneticsData, playPhonetics]);
+
+  useEffect(() => {
     if (currentQuestion && gameStatus === "PLAYING" && !winnerInfo) {
       answerInputRef.current?.focus();
     }
@@ -162,10 +203,13 @@ export default function RoomPage({
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL!;
     const socketUrl = `${wsUrl}/ws/room/${roomCode}?playerId=${myPlayerId}&playerName=${encodeURIComponent(myName)}&password=${encodeURIComponent(password)}&isHost=${isHostFlag}`;
 
-    ws.current = new WebSocket(socketUrl);
-    ws.current.onopen = () => setError(null);
+    const socket = new WebSocket(socketUrl);
+    ws.current = socket;
+    socket.onopen = () => {
+      if (ws.current === socket) setError(null);
+    };
 
-    ws.current.onmessage = (event) => {
+    socket.onmessage = (event) => {
       const message = JSON.parse(event.data) as ServerMessage;
 
       switch (message.type) {
@@ -182,6 +226,8 @@ export default function RoomPage({
           break;
         case "NEXT_QUESTION": {
           const payload = message.payload as ServerPayload;
+          payload.image_url ||=
+            imageGoat[Math.floor(Math.random() * imageGoat.length)];
           setGameStatus("PLAYING");
           setCurrentQuestion(payload as Question);
           setWrongAnswers([]);
@@ -272,14 +318,18 @@ export default function RoomPage({
       }
     };
 
-    ws.current.onerror = () => setError("Không thể kết nối tới máy chủ");
-    ws.current.onclose = () => {
-      if (isMountedRef.current) window.location.href = "/";
+    socket.onerror = () => {
+      if (ws.current === socket) setError("Không thể kết nối tới máy chủ");
+    };
+    socket.onclose = () => {
+      if (ws.current === socket && isMountedRef.current)
+        window.location.href = "/";
     };
 
     return () => {
       isMountedRef.current = false;
-      ws.current?.close();
+      socket.close();
+      if (ws.current === socket) ws.current = null;
     };
   }, [
     roomCode,
@@ -321,11 +371,6 @@ export default function RoomPage({
         },
       }),
     );
-  };
-
-  const playPhonetics = () => {
-    const audioUrl = phoneticsData?.[0]?.audio;
-    if (audioUrl) void new Audio(audioUrl).play();
   };
 
   const submitAnswer = (event: FormEvent) => {
@@ -399,9 +444,12 @@ export default function RoomPage({
               <Swords size={20} aria-hidden="true" />
             </span>
             <div className="min-w-0">
-              <p className="truncate text-sm font-black tracking-[0.12em]">VOCAB BATTLE</p>
+              <p className="truncate text-sm font-black tracking-[0.12em]">
+                VOCAB BATTLE
+              </p>
               <p className="flex items-center gap-1.5 text-xs text-muted">
-                <Radio size={11} className="text-signal" /> {statusCopy[gameStatus]}
+                <Radio size={11} className="text-signal" />{" "}
+                {statusCopy[gameStatus]}
               </p>
             </div>
           </div>
@@ -413,7 +461,11 @@ export default function RoomPage({
             aria-label={`Sao chép mã phòng ${roomCode}`}
           >
             <span className="text-muted">#</span> {roomCode}
-            {copied ? <Check size={15} className="text-signal" /> : <Copy size={15} className="text-muted" />}
+            {copied ? (
+              <Check size={15} className="text-signal" />
+            ) : (
+              <Copy size={15} className="text-muted" />
+            )}
           </button>
 
           <div className="flex items-center gap-2">
@@ -463,7 +515,10 @@ export default function RoomPage({
                 <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full border-[55px] border-signal/[0.055]" />
                 <div className="pointer-events-none absolute bottom-8 right-8 hidden grid-cols-4 gap-2 opacity-25 sm:grid">
                   {Array.from({ length: 12 }).map((_, index) => (
-                    <span key={index} className="size-2 rounded-full bg-electric" />
+                    <span
+                      key={index}
+                      className="size-2 rounded-full bg-electric"
+                    />
                   ))}
                 </div>
 
@@ -479,7 +534,9 @@ export default function RoomPage({
                     </p>
                     <h1 className="text-balance text-4xl font-black leading-[0.94] tracking-[-0.045em] sm:text-6xl">
                       TẬP HỢP ĐỦ ĐỘI.
-                      <span className="block text-signal">BẮT ĐẦU CUỘC ĐẤU.</span>
+                      <span className="block text-signal">
+                        BẮT ĐẦU CUỘC ĐẤU.
+                      </span>
                     </h1>
                     <p className="mt-6 max-w-lg text-base leading-7 text-muted">
                       Chia sẻ mã phòng cho bạn bè. Trận đấu có thể bắt đầu ngay
@@ -494,7 +551,11 @@ export default function RoomPage({
                       className="flex min-h-14 items-center gap-3 rounded-xl border border-white/12 bg-white/[0.055] px-5 font-mono text-lg font-black tracking-[0.16em] transition hover:border-electric/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric"
                     >
                       {roomCode}
-                      {copied ? <Check size={18} className="text-signal" /> : <Copy size={18} className="text-muted" />}
+                      {copied ? (
+                        <Check size={18} className="text-signal" />
+                      ) : (
+                        <Copy size={18} className="text-muted" />
+                      )}
                     </button>
                     <p className="text-sm text-muted">Chạm để sao chép mã</p>
                   </div>
@@ -508,9 +569,13 @@ export default function RoomPage({
                         className="flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-signal px-6 py-4 text-base font-black text-black transition hover:brightness-110 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:w-auto sm:min-w-72"
                       >
                         {players.length < 2 ? (
-                          <><Users size={19} /> Cần thêm một người chơi</>
+                          <>
+                            <Users size={19} /> Cần thêm một người chơi
+                          </>
                         ) : (
-                          <><Zap size={19} /> Bắt đầu trận đấu</>
+                          <>
+                            <Zap size={19} /> Bắt đầu trận đấu
+                          </>
                         )}
                       </button>
                     ) : (
@@ -526,11 +591,18 @@ export default function RoomPage({
                 </div>
               </section>
 
-              <aside className="arena-panel rounded-[1.75rem] p-5 sm:p-7" aria-labelledby="player-list-title">
+              <aside
+                className="arena-panel rounded-[1.75rem] p-5 sm:p-7"
+                aria-labelledby="player-list-title"
+              >
                 <div className="mb-6 flex items-center justify-between">
                   <div>
-                    <p className="mb-1 text-xs font-bold uppercase tracking-[0.14em] text-electric">Roster</p>
-                    <h2 id="player-list-title" className="text-2xl font-black">Đội hình</h2>
+                    <p className="mb-1 text-xs font-bold uppercase tracking-[0.14em] text-electric">
+                      Roster
+                    </p>
+                    <h2 id="player-list-title" className="text-2xl font-black">
+                      Đội hình
+                    </h2>
                   </div>
                   <span className="grid size-11 place-items-center rounded-xl bg-electric/10 text-electric">
                     <Users size={21} />
@@ -550,19 +622,32 @@ export default function RoomPage({
                         }`}
                       >
                         <span className="flex min-w-0 items-center gap-3">
-                          <span className={`grid size-10 shrink-0 place-items-center rounded-xl font-mono text-sm font-black ${isMe ? "bg-signal text-black" : "bg-white/8 text-muted"}`}>
+                          <span
+                            className={`grid size-10 shrink-0 place-items-center rounded-xl font-mono text-sm font-black ${isMe ? "bg-signal text-black" : "bg-white/8 text-muted"}`}
+                          >
                             {String(index + 1).padStart(2, "0")}
                           </span>
                           <span className="min-w-0">
                             <span className="flex items-center gap-1.5">
-                              <span className="truncate font-bold text-white">{player.name}</span>
-                              {isMe && isHost && <Crown size={15} className="shrink-0 text-signal" aria-label="Chủ phòng" />}
+                              <span className="truncate font-bold text-white">
+                                {player.name}
+                              </span>
+                              {isMe && isHost && (
+                                <Crown
+                                  size={15}
+                                  className="shrink-0 text-signal"
+                                  aria-label="Chủ phòng"
+                                />
+                              )}
                             </span>
-                            <span className="text-xs text-muted">{isMe ? "Bạn" : "Đã kết nối"}</span>
+                            <span className="text-xs text-muted">
+                              {isMe ? "Bạn" : "Đã kết nối"}
+                            </span>
                           </span>
                         </span>
                         <span className="flex items-center gap-2 text-xs font-bold text-signal">
-                          <span className="size-2 rounded-full bg-signal" /> ONLINE
+                          <span className="size-2 rounded-full bg-signal" />{" "}
+                          ONLINE
                         </span>
                       </li>
                     );
@@ -586,7 +671,10 @@ export default function RoomPage({
               exit={reduceMotion ? undefined : { opacity: 0, scale: 0.98 }}
               className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_310px]"
             >
-              <section className="arena-panel relative overflow-hidden rounded-[1.75rem]" aria-labelledby="question-title">
+              <section
+                className="arena-panel relative overflow-hidden rounded-[1.75rem]"
+                aria-labelledby="question-title"
+              >
                 <div className="h-1.5 bg-white/[0.06]">
                   <div
                     className={`h-full transition-[width] duration-1000 ease-linear ${
@@ -603,7 +691,8 @@ export default function RoomPage({
                 <div className="p-5 sm:p-8 lg:p-10">
                   <div className="mb-7 flex items-center justify-between gap-3">
                     <span className="rounded-full border border-electric/20 bg-electric/10 px-3 py-1.5 text-xs font-black uppercase tracking-[0.14em] text-electric">
-                      Vòng {currentQuestion.round || 1}/{currentQuestion.total_rounds || lastTotalRounds || "—"}
+                      Vòng {currentQuestion.round || 1}/
+                      {currentQuestion.total_rounds || lastTotalRounds || "—"}
                     </span>
                     <div
                       className={`flex min-h-12 items-center gap-2 rounded-xl border px-3 font-mono text-xl font-black sm:px-4 sm:text-2xl ${
@@ -622,7 +711,9 @@ export default function RoomPage({
                     <div className="mb-4 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-muted">
                       <Gamepad2 size={15} /> Giải mã từ vựng
                     </div>
-                    <h1 id="question-title" className="sr-only">Câu hỏi vòng {currentQuestion.round || 1}</h1>
+                    <h1 id="question-title" className="sr-only">
+                      Câu hỏi vòng {currentQuestion.round || 1}
+                    </h1>
 
                     {currentQuestion.image_url && (
                       <div className="relative mx-auto mb-6 aspect-video max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-black/20">
@@ -642,9 +733,17 @@ export default function RoomPage({
                         letter.trim() ? (
                           <motion.span
                             key={`${currentQuestion.card_id}-${index}`}
-                            initial={reduceMotion ? false : { opacity: 0, scale: 0.8, y: 6 }}
+                            initial={
+                              reduceMotion
+                                ? false
+                                : { opacity: 0, scale: 0.8, y: 6 }
+                            }
                             animate={{ opacity: 1, scale: 1, y: 0 }}
-                            transition={{ delay: reduceMotion ? 0 : Math.min(index * 0.035, 0.3) }}
+                            transition={{
+                              delay: reduceMotion
+                                ? 0
+                                : Math.min(index * 0.035, 0.3),
+                            }}
                             className={`grid size-10 place-items-center rounded-lg border font-mono text-lg font-black uppercase sm:size-13 sm:rounded-xl sm:text-2xl ${
                               letter === "_"
                                 ? "border-white/14 bg-white/[0.045] text-transparent"
@@ -666,15 +765,23 @@ export default function RoomPage({
                     {timeRemaining <= 7 && phoneticsData?.[0] && (
                       <motion.button
                         type="button"
-                        initial={reduceMotion ? false : { opacity: 0, scale: 0.95 }}
+                        initial={
+                          reduceMotion ? false : { opacity: 0, scale: 0.95 }
+                        }
                         animate={{ opacity: 1, scale: 1 }}
                         onClick={playPhonetics}
+                        aria-keyshortcuts="`"
                         className="mb-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-electric/25 bg-electric/10 px-4 text-sm font-bold text-electric transition hover:bg-electric/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric"
                       >
                         <AudioLines size={18} />
-                        Nghe phát âm
+                        Nghe lại{" "}
+                        <kbd className="rounded border border-current/30 px-1.5 font-mono">
+                          `
+                        </kbd>
                         {phoneticsData[0].text && (
-                          <span className="font-mono text-white">{phoneticsData[0].text}</span>
+                          <span className="font-mono text-white">
+                            {phoneticsData[0].text}
+                          </span>
                         )}
                       </motion.button>
                     )}
@@ -682,9 +789,13 @@ export default function RoomPage({
                     <div className="mb-5 grid gap-3 text-left sm:grid-cols-2">
                       {currentQuestion.translation && (
                         <div className="rounded-2xl border border-signal/15 bg-signal/[0.055] p-4 sm:col-span-2">
-                          <p className="mb-1 text-[10px] font-black uppercase tracking-[0.16em] text-signal">Bản dịch</p>
+                          <p className="mb-1 text-[10px] font-black uppercase tracking-[0.16em] text-signal">
+                            Bản dịch
+                          </p>
                           <div className="flex items-end justify-between gap-3">
-                            <p className="text-lg font-bold text-white sm:text-xl">{currentQuestion.translation}</p>
+                            <p className="text-lg font-bold text-white sm:text-xl">
+                              {currentQuestion.translation}
+                            </p>
                             <span className="rounded-md bg-black/25 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-muted">
                               {currentQuestion.type || "word"}
                             </span>
@@ -692,35 +803,52 @@ export default function RoomPage({
                         </div>
                       )}
 
-                      {(currentQuestion.explanation?.vi || currentQuestion.explanation?.en) && (
+                      {(currentQuestion.explanation?.vi ||
+                        currentQuestion.explanation?.en) && (
                         <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
                           <p className="mb-2 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-electric">
                             <Lightbulb size={14} /> Giải thích
                           </p>
                           {currentQuestion.explanation.vi && (
-                            <p className="text-sm leading-6 text-white">{currentQuestion.explanation.vi}</p>
+                            <p className="text-sm leading-6 text-white">
+                              {currentQuestion.explanation.vi}
+                            </p>
                           )}
                           {currentQuestion.explanation.en && (
-                            <p className="mt-2 text-xs leading-5 text-muted">{currentQuestion.explanation.en}</p>
+                            <p className="mt-2 text-xs leading-5 text-muted">
+                              {currentQuestion.explanation.en}
+                            </p>
                           )}
                         </div>
                       )}
 
-                      {(currentQuestion.example?.en || currentQuestion.example?.vi) && (
+                      {(currentQuestion.example?.en ||
+                        currentQuestion.example?.vi) && (
                         <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
-                          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-electric">Ví dụ</p>
+                          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-electric">
+                            Ví dụ
+                          </p>
                           {currentQuestion.example.en && (
-                            <p className="text-sm font-semibold leading-6 text-white">“{currentQuestion.example.en}”</p>
+                            <p className="text-sm font-semibold leading-6 text-white">
+                              “{currentQuestion.example.en}”
+                            </p>
                           )}
                           {currentQuestion.example.vi && (
-                            <p className="mt-2 text-xs leading-5 text-muted">{currentQuestion.example.vi}</p>
+                            <p className="mt-2 text-xs leading-5 text-muted">
+                              {currentQuestion.example.vi}
+                            </p>
                           )}
                         </div>
                       )}
                     </div>
 
-                    <form onSubmit={submitAnswer} className="flex flex-col gap-2 sm:flex-row">
-                      <label htmlFor="answer" className="sr-only">Đáp án của bạn</label>
+                    <form
+                      onSubmit={submitAnswer}
+                      className="flex flex-col gap-2 sm:flex-row"
+                    >
+                      <label htmlFor="answer" className="sr-only">
+                        Đáp án của bạn
+                      </label>
                       <input
                         ref={answerInputRef}
                         id="answer"
@@ -728,13 +856,21 @@ export default function RoomPage({
                         value={answerInput}
                         onChange={(event) => setAnswerInput(event.target.value)}
                         disabled={Boolean(winnerInfo) || timeRemaining === 0}
-                        placeholder={timeRemaining === 0 ? "Hết giờ!" : "Nhập đáp án của bạn…"}
+                        placeholder={
+                          timeRemaining === 0
+                            ? "Hết giờ!"
+                            : "Nhập đáp án của bạn…"
+                        }
                         className="arena-field min-h-14 flex-1 text-center text-lg font-bold sm:text-left"
                         autoComplete="off"
                       />
                       <button
                         type="submit"
-                        disabled={!answerInput.trim() || Boolean(winnerInfo) || timeRemaining === 0}
+                        disabled={
+                          !answerInput.trim() ||
+                          Boolean(winnerInfo) ||
+                          timeRemaining === 0
+                        }
                         className="flex min-h-14 items-center justify-center gap-2 rounded-xl bg-signal px-6 font-black text-black transition hover:brightness-110 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal"
                       >
                         Chốt đáp án <ArrowRight size={18} />
@@ -743,10 +879,15 @@ export default function RoomPage({
 
                     {wrongAnswers.length > 0 && (
                       <div className="mt-4 rounded-2xl border border-danger/20 bg-danger/[0.06] p-3 text-left">
-                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-danger-copy">Đã thử</p>
+                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-danger-copy">
+                          Đã thử
+                        </p>
                         <div className="flex max-h-20 flex-wrap gap-1.5 overflow-y-auto">
                           {wrongAnswers.map((item, index) => (
-                            <span key={`${item.player_name}-${item.answer}-${index}`} className="rounded-lg bg-black/25 px-2.5 py-1 text-xs text-danger-copy">
+                            <span
+                              key={`${item.player_name}-${item.answer}-${index}`}
+                              className="rounded-lg bg-black/25 px-2.5 py-1 text-xs text-danger-copy"
+                            >
                               {item.player_name}: <strong>{item.answer}</strong>
                             </span>
                           ))}
@@ -771,10 +912,18 @@ export default function RoomPage({
                         animate={{ scale: 1, y: 0 }}
                         className="max-w-lg"
                       >
-                        <span className={`mx-auto mb-5 grid size-20 place-items-center rounded-3xl ${winnerInfo.timeout ? "bg-danger/10 text-danger" : "bg-signal/10 text-signal"}`}>
-                          {winnerInfo.timeout ? <Clock3 size={38} /> : <CheckCircle2 size={38} />}
+                        <span
+                          className={`mx-auto mb-5 grid size-20 place-items-center rounded-3xl ${winnerInfo.timeout ? "bg-danger/10 text-danger" : "bg-signal/10 text-signal"}`}
+                        >
+                          {winnerInfo.timeout ? (
+                            <Clock3 size={38} />
+                          ) : (
+                            <CheckCircle2 size={38} />
+                          )}
                         </span>
-                        <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-electric">Kết thúc vòng</p>
+                        <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-electric">
+                          Kết thúc vòng
+                        </p>
                         <h2 className="text-balance text-3xl font-black sm:text-5xl">
                           {winnerInfo.timeout
                             ? "HẾT GIỜ!"
@@ -784,8 +933,12 @@ export default function RoomPage({
                         </h2>
                         {winnerInfo.card?.word && (
                           <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.05] px-6 py-4">
-                            <p className="text-xs uppercase tracking-[0.14em] text-muted">Đáp án</p>
-                            <p className="mt-1 font-mono text-2xl font-black uppercase tracking-[0.12em] text-signal">{winnerInfo.card.word}</p>
+                            <p className="text-xs uppercase tracking-[0.14em] text-muted">
+                              Đáp án
+                            </p>
+                            <p className="mt-1 font-mono text-2xl font-black uppercase tracking-[0.12em] text-signal">
+                              {winnerInfo.card.word}
+                            </p>
                           </div>
                         )}
                       </motion.div>
@@ -794,11 +947,18 @@ export default function RoomPage({
                 </AnimatePresence>
               </section>
 
-              <aside className="arena-panel h-fit rounded-[1.75rem] p-5 lg:sticky lg:top-6" aria-labelledby="scoreboard-title">
+              <aside
+                className="arena-panel h-fit rounded-[1.75rem] p-5 lg:sticky lg:top-6"
+                aria-labelledby="scoreboard-title"
+              >
                 <div className="mb-5 flex items-center justify-between">
                   <div>
-                    <p className="mb-1 text-xs font-bold uppercase tracking-[0.14em] text-electric">Live score</p>
-                    <h2 id="scoreboard-title" className="text-xl font-black">Bảng xếp hạng</h2>
+                    <p className="mb-1 text-xs font-bold uppercase tracking-[0.14em] text-electric">
+                      Live score
+                    </p>
+                    <h2 id="scoreboard-title" className="text-xl font-black">
+                      Bảng xếp hạng
+                    </h2>
                   </div>
                   <Trophy size={23} className="text-signal" />
                 </div>
@@ -817,12 +977,21 @@ export default function RoomPage({
                         }`}
                       >
                         <span className="flex min-w-0 items-center gap-3">
-                          <span className={`grid size-8 shrink-0 place-items-center rounded-lg font-mono text-xs font-black ${index === 0 ? "bg-signal text-black" : "bg-white/8 text-muted"}`}>
+                          <span
+                            className={`grid size-8 shrink-0 place-items-center rounded-lg font-mono text-xs font-black ${index === 0 ? "bg-signal text-black" : "bg-white/8 text-muted"}`}
+                          >
                             {index + 1}
                           </span>
-                          <span className="truncate text-sm font-bold">{player.name}{isMe && <span className="text-electric"> · Bạn</span>}</span>
+                          <span className="truncate text-sm font-bold">
+                            {player.name}
+                            {isMe && (
+                              <span className="text-electric"> · Bạn</span>
+                            )}
+                          </span>
                         </span>
-                        <span className="font-mono text-lg font-black text-white">{player.score}</span>
+                        <span className="font-mono text-lg font-black text-white">
+                          {player.score}
+                        </span>
                       </li>
                     );
                   })}
@@ -845,22 +1014,43 @@ export default function RoomPage({
                   <span className="mb-8 grid size-16 place-items-center rounded-2xl bg-signal text-black shadow-[0_0_35px_rgba(223,255,98,0.16)]">
                     <Trophy size={31} />
                   </span>
-                  <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-signal">Trận đấu hoàn tất</p>
-                  <h1 className="text-balance text-4xl font-black leading-[0.95] tracking-[-0.04em] sm:text-5xl">NHÀ VÔ ĐỊCH<br /><span className="text-signal">{champion?.name || "—"}</span></h1>
-                  <p className="mt-5 max-w-md text-sm leading-6 text-muted">Một trận đấu đã khép lại. Cả đội có thể sẵn sàng để tái đấu ngay trong phòng này.</p>
+                  <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-signal">
+                    Trận đấu hoàn tất
+                  </p>
+                  <h1 className="text-balance text-4xl font-black leading-[0.95] tracking-[-0.04em] sm:text-5xl">
+                    NHÀ VÔ ĐỊCH
+                    <br />
+                    <span className="text-signal">{champion?.name || "—"}</span>
+                  </h1>
+                  <p className="mt-5 max-w-md text-sm leading-6 text-muted">
+                    Một trận đấu đã khép lại. Cả đội có thể sẵn sàng để tái đấu
+                    ngay trong phòng này.
+                  </p>
 
                   <div className="mt-8 grid grid-cols-3 gap-2">
                     <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
-                      <p className="font-mono text-2xl font-black">{champion?.score || 0}</p>
-                      <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-muted">Điểm cao</p>
+                      <p className="font-mono text-2xl font-black">
+                        {champion?.score || 0}
+                      </p>
+                      <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-muted">
+                        Điểm cao
+                      </p>
                     </div>
                     <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
-                      <p className="font-mono text-2xl font-black">{lastTotalRounds}</p>
-                      <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-muted">Câu hỏi</p>
+                      <p className="font-mono text-2xl font-black">
+                        {lastTotalRounds}
+                      </p>
+                      <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-muted">
+                        Câu hỏi
+                      </p>
                     </div>
                     <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
-                      <p className="font-mono text-2xl font-black">{players.length}</p>
-                      <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-muted">Người chơi</p>
+                      <p className="font-mono text-2xl font-black">
+                        {players.length}
+                      </p>
+                      <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-muted">
+                        Người chơi
+                      </p>
                     </div>
                   </div>
 
@@ -887,12 +1077,15 @@ export default function RoomPage({
 
                     {isHost && !allReady && (
                       <p className="rounded-xl border border-white/10 bg-white/[0.035] px-4 py-3 text-center text-sm text-muted">
-                        Đang chờ mọi người sẵn sàng ({readyIds.length}/{players.length})
+                        Đang chờ mọi người sẵn sàng ({readyIds.length}/
+                        {players.length})
                       </p>
                     )}
 
                     {!isHost && allReady && (
-                      <p className="rounded-xl border border-electric/20 bg-electric/[0.06] px-4 py-3 text-center text-sm text-muted">Tất cả đã sẵn sàng · Chờ chủ phòng bắt đầu</p>
+                      <p className="rounded-xl border border-electric/20 bg-electric/[0.06] px-4 py-3 text-center text-sm text-muted">
+                        Tất cả đã sẵn sàng · Chờ chủ phòng bắt đầu
+                      </p>
                     )}
 
                     <button
@@ -906,13 +1099,25 @@ export default function RoomPage({
                 </div>
               </section>
 
-              <section className="arena-panel rounded-[1.75rem] p-5 sm:p-7" aria-labelledby="final-ranking-title">
+              <section
+                className="arena-panel rounded-[1.75rem] p-5 sm:p-7"
+                aria-labelledby="final-ranking-title"
+              >
                 <div className="mb-6 flex items-center justify-between gap-4">
                   <div>
-                    <p className="mb-1 text-xs font-black uppercase tracking-[0.16em] text-electric">Final standing</p>
-                    <h2 id="final-ranking-title" className="text-2xl font-black">Bảng thành tích</h2>
+                    <p className="mb-1 text-xs font-black uppercase tracking-[0.16em] text-electric">
+                      Final standing
+                    </p>
+                    <h2
+                      id="final-ranking-title"
+                      className="text-2xl font-black"
+                    >
+                      Bảng thành tích
+                    </h2>
                   </div>
-                  <span className="rounded-full bg-white/[0.06] px-3 py-1.5 text-xs font-bold text-muted">Ready {readyIds.length}/{players.length}</span>
+                  <span className="rounded-full bg-white/[0.06] px-3 py-1.5 text-xs font-bold text-muted">
+                    Ready {readyIds.length}/{players.length}
+                  </span>
                 </div>
 
                 <ol className="space-y-3">
@@ -929,20 +1134,43 @@ export default function RoomPage({
                         }`}
                       >
                         <span className="flex min-w-0 items-center gap-3">
-                          <span className={`grid size-11 shrink-0 place-items-center rounded-xl ${index === 0 ? "bg-signal text-black" : "bg-white/8 text-muted"}`}>
-                            {index === 0 ? <Medal size={21} /> : <span className="font-mono font-black">{index + 1}</span>}
+                          <span
+                            className={`grid size-11 shrink-0 place-items-center rounded-xl ${index === 0 ? "bg-signal text-black" : "bg-white/8 text-muted"}`}
+                          >
+                            {index === 0 ? (
+                              <Medal size={21} />
+                            ) : (
+                              <span className="font-mono font-black">
+                                {index + 1}
+                              </span>
+                            )}
                           </span>
                           <span className="min-w-0">
-                            <span className="block truncate font-bold text-white">{player.name}{isMe && <span className="text-electric"> · Bạn</span>}</span>
-                            <span className={`mt-1 flex items-center gap-1.5 text-xs ${ready ? "text-signal" : "text-muted"}`}>
-                              {ready ? <CheckCircle2 size={13} /> : <span className="size-2 rounded-full border border-muted" />}
+                            <span className="block truncate font-bold text-white">
+                              {player.name}
+                              {isMe && (
+                                <span className="text-electric"> · Bạn</span>
+                              )}
+                            </span>
+                            <span
+                              className={`mt-1 flex items-center gap-1.5 text-xs ${ready ? "text-signal" : "text-muted"}`}
+                            >
+                              {ready ? (
+                                <CheckCircle2 size={13} />
+                              ) : (
+                                <span className="size-2 rounded-full border border-muted" />
+                              )}
                               {ready ? "Sẵn sàng tái đấu" : "Đang nghỉ"}
                             </span>
                           </span>
                         </span>
                         <span className="text-right">
-                          <span className="block font-mono text-2xl font-black">{player.score}</span>
-                          <span className="text-[10px] uppercase tracking-[0.12em] text-muted">điểm</span>
+                          <span className="block font-mono text-2xl font-black">
+                            {player.score}
+                          </span>
+                          <span className="text-[10px] uppercase tracking-[0.12em] text-muted">
+                            điểm
+                          </span>
                         </span>
                       </li>
                     );

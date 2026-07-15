@@ -24,11 +24,13 @@ type Mode = "join" | "create";
 interface CategoryResponse {
   category_id: string;
   name: string;
+  description: string;
 }
 
 interface CategoryOption {
   id: string;
   name: string;
+  description: string;
 }
 
 interface ActiveRoom {
@@ -39,7 +41,7 @@ interface ActiveRoom {
 }
 
 const defaultCategories: CategoryOption[] = [
-  { id: "random", name: "Ngẫu nhiên · Toàn bộ kho từ" },
+  { id: "random", name: "Ramdom", description: "Ngẫu nhiên · Toàn bộ kho từ" },
 ];
 
 export default function Home() {
@@ -73,6 +75,7 @@ export default function Home() {
           ...data.map((item) => ({
             id: item.category_id,
             name: item.name,
+            description: item.description,
           })),
         ]);
       })
@@ -82,17 +85,34 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL!;
-    const fetchRooms = () => {
-      fetch(`${apiUrl}/api/admin/rooms`)
-        .then((response) => response.json())
-        .then((data: ActiveRoom[]) => setRooms(data || []))
-        .catch(() => {});
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL!;
+    let socket: WebSocket | null = null;
+    let closed = false;
+    let reconnect = 0;
+
+    const connect = () => {
+      socket = new WebSocket(`${wsUrl}/ws/lobby`);
+      socket.onmessage = (event) => {
+        const message = JSON.parse(event.data) as {
+          type: string;
+          payload: ActiveRoom[];
+        };
+        if (message.type === "ROOMS_UPDATE") {
+          setRooms(message.payload || []);
+        }
+      };
+      socket.onclose = () => {
+        // Tự kết nối lại sau 3s nếu chưa unmount — tránh kẹt danh sách phòng khi WS ngắt
+        if (!closed) reconnect = window.setTimeout(connect, 3000);
+      };
     };
 
-    fetchRooms();
-    const interval = window.setInterval(fetchRooms, 2000);
-    return () => window.clearInterval(interval);
+    connect();
+    return () => {
+      closed = true;
+      window.clearTimeout(reconnect);
+      socket?.close();
+    };
   }, []);
 
   const preparePlayer = () => {
@@ -225,7 +245,9 @@ export default function Home() {
               <span className="relative inline-flex size-2 rounded-full bg-signal" />
             </span>
             <span className="hidden sm:inline">Máy chủ hoạt động</span>
-            <span className="font-mono font-bold text-white">{rooms.length}</span>
+            <span className="font-mono font-bold text-white">
+              {rooms.length}
+            </span>
             <span>phòng</span>
           </div>
           <ThemeToggle />
@@ -250,8 +272,8 @@ export default function Home() {
           </h1>
 
           <p className="mt-7 max-w-xl text-balance text-base leading-7 text-muted sm:text-lg">
-            Một đấu trường từ vựng tốc độ cao. Tạo phòng, gọi bạn bè và
-            giành điểm bằng từng đáp án chính xác.
+            Một đấu trường từ vựng tốc độ cao. Tạo phòng, gọi bạn bè và giành
+            điểm bằng từng đáp án chính xác.
           </p>
 
           <div className="mt-9 grid max-w-xl grid-cols-3 gap-3">
@@ -276,7 +298,8 @@ export default function Home() {
 
           <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted">
             <span className="flex items-center gap-2">
-              <ShieldCheck size={17} className="text-signal" /> Không cần tài khoản
+              <ShieldCheck size={17} className="text-signal" /> Không cần tài
+              khoản
             </span>
             <span className="flex items-center gap-2">
               <Sparkles size={17} className="text-electric" /> Vào trận tức thì
@@ -298,11 +321,18 @@ export default function Home() {
                 <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-electric">
                   Battle control
                 </p>
-                <h2 id="control-title" className="text-2xl font-black text-white">
+                <h2
+                  id="control-title"
+                  className="text-2xl font-black text-white"
+                >
                   Sẵn sàng vào trận?
                 </h2>
               </div>
-              <Gamepad2 className="mt-1 text-signal" size={27} aria-hidden="true" />
+              <Gamepad2
+                className="mt-1 text-signal"
+                size={27}
+                aria-hidden="true"
+              />
             </div>
 
             <div
@@ -383,7 +413,10 @@ export default function Home() {
                         </p>
                         <p className="mt-1 text-sm text-muted">
                           Nhập mật khẩu để tham gia phòng{" "}
-                          <strong className="font-mono text-white">{pendingRoomCode}</strong>.
+                          <strong className="font-mono text-white">
+                            {pendingRoomCode}
+                          </strong>
+                          .
                         </p>
                       </div>
                       <label
@@ -401,7 +434,9 @@ export default function Home() {
                           id="join-password"
                           type="password"
                           value={passwordPromptInput}
-                          onChange={(event) => setPasswordPromptInput(event.target.value)}
+                          onChange={(event) =>
+                            setPasswordPromptInput(event.target.value)
+                          }
                           className="arena-field pl-12"
                           placeholder="Nhập mật khẩu phòng"
                           autoFocus
@@ -430,7 +465,9 @@ export default function Home() {
                         <input
                           id="join-code"
                           value={roomInput}
-                          onChange={(event) => setRoomInput(event.target.value.toUpperCase())}
+                          onChange={(event) =>
+                            setRoomInput(event.target.value.toUpperCase())
+                          }
                           className="arena-field pl-12 font-mono font-bold uppercase tracking-[0.12em]"
                           placeholder="VD: BATTLE01"
                           maxLength={16}
@@ -496,8 +533,12 @@ export default function Home() {
                       className="arena-field appearance-none"
                     >
                       {categories.map((item) => (
-                        <option key={item.id} value={item.id} className="bg-surface">
-                          {item.name}
+                        <option
+                          key={item.id}
+                          value={item.id}
+                          className="bg-surface"
+                        >
+                          {item.description}
                         </option>
                       ))}
                     </select>
@@ -517,11 +558,15 @@ export default function Home() {
                       min="1"
                       max="50"
                       value={totalQuestions}
-                      onChange={(event) => setTotalQuestions(Number(event.target.value))}
+                      onChange={(event) =>
+                        setTotalQuestions(Number(event.target.value))
+                      }
                       className="arena-field font-mono font-black"
                       required
                     />
-                    <p className="mt-1.5 text-xs text-muted">Từ 1 đến 50 câu mỗi trận.</p>
+                    <p className="mt-1.5 text-xs text-muted">
+                      Từ 1 đến 50 câu mỗi trận.
+                    </p>
                   </div>
 
                   <div>
@@ -529,7 +574,10 @@ export default function Home() {
                       htmlFor="create-password"
                       className="mb-2 block text-xs font-bold uppercase tracking-[0.13em] text-muted"
                     >
-                      Mật khẩu <span className="font-normal normal-case text-muted">(tùy chọn)</span>
+                      Mật khẩu{" "}
+                      <span className="font-normal normal-case text-muted">
+                        (tùy chọn)
+                      </span>
                     </label>
                     <div className="relative">
                       <LockKeyhole
@@ -583,11 +631,16 @@ export default function Home() {
             <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-electric">
               Live now
             </p>
-            <h2 id="active-rooms-title" className="text-2xl font-black text-white">
+            <h2
+              id="active-rooms-title"
+              className="text-2xl font-black text-white"
+            >
               Phòng đang hoạt động
             </h2>
           </div>
-          <p className="hidden text-sm text-muted sm:block">Cập nhật mỗi 2 giây</p>
+          <p className="hidden text-sm text-muted sm:block">
+            Cập nhật realtime
+          </p>
         </div>
 
         {rooms.length > 0 ? (
@@ -615,7 +668,11 @@ export default function Home() {
                         {room.code}
                       </span>
                       {room.has_password && (
-                        <LockKeyhole size={14} className="text-muted" aria-label="Có mật khẩu" />
+                        <LockKeyhole
+                          size={14}
+                          className="text-muted"
+                          aria-label="Có mật khẩu"
+                        />
                       )}
                     </span>
                     <span className="flex items-center gap-2 text-sm text-muted">
@@ -639,7 +696,9 @@ export default function Home() {
           <div className="arena-panel flex min-h-36 flex-col items-center justify-center rounded-2xl px-5 text-center">
             <Swords size={26} className="mb-3 text-muted" aria-hidden="true" />
             <p className="font-semibold text-white">Chưa có phòng nào mở</p>
-            <p className="mt-1 text-sm text-muted">Hãy là người khởi động trận đầu tiên.</p>
+            <p className="mt-1 text-sm text-muted">
+              Hãy là người khởi động trận đầu tiên.
+            </p>
           </div>
         )}
       </section>

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
@@ -18,6 +19,19 @@ type Client struct {
 	PlayerName string
 	Conn       *websocket.Conn
 	Send       chan Message
+	Done       chan struct{}
+	closeOnce  sync.Once
+}
+
+func (c *Client) Close() {
+	c.closeOnce.Do(func() {
+		if c.Done != nil {
+			close(c.Done)
+		}
+		if c.Conn != nil {
+			c.Conn.Close()
+		}
+	})
 }
 
 func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request, roomCode, pID, pName, password, isHost string) {
@@ -60,6 +74,7 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request, roomCode, pID, pN
 		PlayerName: pName,
 		Conn:       conn,
 		Send:       make(chan Message, 256),
+		Done:       make(chan struct{}),
 	}
 
 	log.Printf("Registering client %s to room %s", pID, roomCode)
@@ -71,8 +86,8 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request, roomCode, pID, pN
 
 func (c *Client) readPump() {
 	defer func() {
+		c.Close()
 		c.Room.Unregister <- c
-		c.Conn.Close()
 	}()
 	for {
 		_, msg, err := c.Conn.ReadMessage()
@@ -86,10 +101,57 @@ func (c *Client) readPump() {
 	}
 }
 
+// ServeLobbyWs upgrade WS cho home page — chỉ nhận ROOMS_UPDATE, không tham gia room.
+func ServeLobbyWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		return
+	}
+	client := &LobbyClient{
+		Hub:  hub,
+		Conn: conn,
+		Send: make(chan Message, 16),
+		Done: make(chan struct{}),
+	}
+	hub.registerLobby(client)
+	go client.writePump()
+	go client.readPump()
+}
+
+func (lc *LobbyClient) readPump() {
+	defer lc.Hub.unregisterLobby(lc)
+	for {
+		if _, _, err := lc.Conn.ReadMessage(); err != nil {
+			return
+		}
+	}
+}
+
+func (lc *LobbyClient) writePump() {
+	defer lc.Close()
+	for {
+		select {
+		case msg := <-lc.Send:
+			if err := lc.Conn.WriteJSON(msg); err != nil {
+				return
+			}
+		case <-lc.Done:
+			return
+		}
+	}
+}
+
 func (c *Client) writePump() {
-	defer c.Conn.Close()
-	for message := range c.Send {
-		c.Conn.WriteJSON(message)
+	defer c.Close()
+	for {
+		select {
+		case message := <-c.Send:
+			if err := c.Conn.WriteJSON(message); err != nil {
+				return
+			}
+		case <-c.Done:
+			return
+		}
 	}
 }
 

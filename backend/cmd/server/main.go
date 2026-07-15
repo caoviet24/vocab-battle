@@ -10,9 +10,14 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil && !os.IsNotExist(err) {
+		log.Fatalf("Không đọc được file .env: %v", err)
+	}
+
 	port := mustEnv("PORT")
 	db.ConnectMongoDB(mustEnv("MONGO_URI"), mustEnv("DB_NAME"))
 
@@ -47,6 +52,11 @@ func main() {
 		}
 
 		ws.ServeWs(hub, c.Writer, c.Request, roomCode, playerID, playerName, password, isHost)
+	})
+
+	// Lobby WS — push danh sách phòng realtime cho home page (thay cho poll /api/admin/rooms)
+	r.GET("/ws/lobby", func(c *gin.Context) {
+		ws.ServeLobbyWs(hub, c.Writer, c.Request)
 	})
 
 	log.Printf("🚀 Backend đang chạy ở cổng %s", port)

@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VocabBattle.Api/VocabBattle.Api.csproj" />
+    <Project Path="src/VocabBattle.Application/VocabBattle.Application.csproj" />
+    <Project Path="src/VocabBattle.Domain/VocabBattle.Domain.csproj" />
+    <Project Path="src/VocabBattle.Infrastructure/VocabBattle.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VocabBattle.UnitTests/VocabBattle.UnitTests.csproj" />
+  </Folder>
+</Solution>

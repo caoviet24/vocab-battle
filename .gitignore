@@ -3,6 +3,7 @@
 .claude/
 .agents/
 .ua/
+.vscode/
 
 # Environment and credentials
 .env

@@ -49,6 +49,60 @@ func TestGenerateHintPattern(t *testing.T) {
 	}
 }
 
+func TestReconnectReplacesPreviousConnection(t *testing.T) {
+	hub := NewHub()
+	room := hub.GetOrCreateRoom("RECONNECT")
+	first := &Client{Room: room, PlayerID: "player", Send: make(chan Message, 16), Done: make(chan struct{})}
+	replacement := &Client{Room: room, PlayerID: "player", Send: make(chan Message, 16), Done: make(chan struct{})}
+
+	room.Register <- first
+	waitForMessage(t, first.Send, "ROOM_STATE")
+	waitForMessage(t, first.Send, "PLAYER_JOINED")
+	room.Register <- replacement
+	waitForMessage(t, replacement.Send, "ROOM_STATE")
+
+	select {
+	case <-first.Done:
+	case <-time.After(time.Second):
+		t.Fatal("previous connection was not closed")
+	}
+
+	room.Mutex.Lock()
+	connectionCount := len(room.Clients)
+	room.Mutex.Unlock()
+	if connectionCount != 1 {
+		t.Fatalf("got %d active connections, want 1", connectionCount)
+	}
+
+	room.Broadcast <- Message{Type: "PRIVATE"}
+	waitForMessage(t, replacement.Send, "PRIVATE")
+	waitForNoMessage(t, first.Send, "PRIVATE")
+}
+
+func TestRoomsKeepMessagesIsolated(t *testing.T) {
+	hub := NewHub()
+	roomAB := hub.GetOrCreateRoom("AB")
+	roomC := hub.GetOrCreateRoom("C")
+	a := &Client{Room: roomAB, PlayerID: "a", Send: make(chan Message, 16)}
+	b := &Client{Room: roomAB, PlayerID: "b", Send: make(chan Message, 16)}
+	c := &Client{Room: roomC, PlayerID: "c", Send: make(chan Message, 16)}
+
+	roomAB.Register <- a
+	waitForMessage(t, a.Send, "ROOM_STATE")
+	waitForMessage(t, a.Send, "PLAYER_JOINED")
+	roomAB.Register <- b
+	waitForMessage(t, b.Send, "ROOM_STATE")
+	waitForMessage(t, b.Send, "PLAYER_JOINED")
+	roomC.Register <- c
+	waitForMessage(t, c.Send, "ROOM_STATE")
+	waitForMessage(t, c.Send, "PLAYER_JOINED")
+
+	roomAB.Broadcast <- Message{Type: "AB_ONLY"}
+	waitForMessage(t, a.Send, "AB_ONLY")
+	waitForMessage(t, b.Send, "AB_ONLY")
+	waitForNoMessage(t, c.Send, "AB_ONLY")
+}
+
 func TestPlayersReadyForStart(t *testing.T) {
 	players := map[string]*Player{"host": {}, "guest": {}}
 
@@ -117,6 +171,22 @@ func waitForMessage(t *testing.T, messages <-chan Message, want string) {
 			}
 		case <-timer.C:
 			t.Fatalf("timed out waiting for %s", want)
+		}
+	}
+}
+
+func waitForNoMessage(t *testing.T, messages <-chan Message, unwanted string) {
+	t.Helper()
+	timer := time.NewTimer(50 * time.Millisecond)
+	defer timer.Stop()
+	for {
+		select {
+		case message := <-messages:
+			if message.Type == unwanted {
+				t.Fatalf("unexpected %s message", unwanted)
+			}
+		case <-timer.C:
+			return
 		}
 	}
 }

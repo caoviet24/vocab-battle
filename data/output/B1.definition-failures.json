@@ -1,0 +1,108 @@
+[
+  {
+    "status": "failed",
+    "id": "30",
+    "word": "access",
+    "type": "verb",
+    "availableTypes": [
+      "noun"
+    ],
+    "reason": "Không có definition khớp value.type=\"verb\". API hiện có loại từ: noun.",
+    "processedAt": "2026-07-15T02:15:36.681Z"
+  },
+  {
+    "status": "failed",
+    "id": "908",
+    "word": "close",
+    "type": "adverb",
+    "availableTypes": [
+      "noun",
+      "verb",
+      "adjective"
+    ],
+    "reason": "Không có definition khớp value.type=\"adverb\". API hiện có loại từ: noun, verb, adjective.",
+    "processedAt": "2026-07-15T02:16:42.350Z"
+  },
+  {
+    "status": "failed",
+    "id": "2734",
+    "word": "injured",
+    "type": "adjective",
+    "availableTypes": [
+      "verb"
+    ],
+    "reason": "Không có definition khớp value.type=\"adjective\". API hiện có loại từ: verb.",
+    "processedAt": "2026-07-15T02:18:53.218Z"
+  },
+  {
+    "status": "failed",
+    "id": "3106",
+    "word": "located",
+    "type": "adjective",
+    "availableTypes": [
+      "verb"
+    ],
+    "reason": "Không có definition khớp value.type=\"adjective\". API hiện có loại từ: verb.",
+    "processedAt": "2026-07-15T02:19:19.113Z"
+  },
+  {
+    "status": "failed",
+    "id": "3485",
+    "word": "net",
+    "type": "noun",
+    "reason": "Dictionary API không tìm thấy từ.",
+    "processedAt": "2026-07-15T02:19:42.420Z"
+  },
+  {
+    "status": "failed",
+    "id": "3522",
+    "word": "nor",
+    "type": "adverb",
+    "availableTypes": [
+      "conjunction",
+      "noun"
+    ],
+    "reason": "Không có definition khớp value.type=\"adverb\". API hiện có loại từ: conjunction, noun.",
+    "processedAt": "2026-07-15T02:19:43.968Z"
+  },
+  {
+    "status": "failed",
+    "id": "3677",
+    "word": "ought",
+    "type": "modal verb",
+    "availableTypes": [
+      "noun"
+    ],
+    "reason": "Không có definition khớp value.type=\"modal verb\". API hiện có loại từ: noun.",
+    "processedAt": "2026-07-15T02:19:57.142Z"
+  },
+  {
+    "status": "failed",
+    "id": "5398",
+    "word": "tight",
+    "type": "adjective",
+    "reason": "Dictionary API không tìm thấy từ.",
+    "processedAt": "2026-07-15T02:22:10.881Z"
+  },
+  {
+    "status": "failed",
+    "id": "5449",
+    "word": "touch",
+    "type": "noun",
+    "reason": "Dictionary API không tìm thấy từ.",
+    "processedAt": "2026-07-15T02:22:16.189Z"
+  },
+  {
+    "status": "failed",
+    "id": "5807",
+    "word": "whatever",
+    "type": "determiner",
+    "availableTypes": [
+      "adjective",
+      "pronoun",
+      "interjection"
+    ],
+    "reason": "Không có definition khớp value.type=\"determiner\". API hiện có loại từ: adjective, pronoun, interjection.",
+    "processedAt": "2026-07-15T02:22:44.212Z"
+  }
+]
