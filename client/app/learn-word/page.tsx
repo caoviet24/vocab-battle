@@ -25,9 +25,7 @@ import { getAnswerReveal, getReviewHint, maskAnswer, mergeUnitProgress, normaliz
 const WORDS_PER_UNIT = 20;
 
 type View = 'categories' | 'units';
-type StudyMode = 'learn' | 'review';
 type AnswerState = 'idle' | 'wrong' | 'correct' | 'revealed';
-type AnswerRating = 'again' | 'hard' | 'good' | 'easy';
 
 type UnitProgress = { learned: number; total: number; completed: boolean };
 type ProgressMap = Record<string, Record<number, UnitProgress>>;
@@ -164,7 +162,11 @@ export default function LearnWordPage() {
                 </div>
             </nav>
 
-            <section className="learn-stage relative z-10 mx-auto w-full max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
+            <section
+                className={`learn-stage relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 ${
+                    view === 'units' ? 'flex flex-1 flex-col overflow-hidden pb-0' : 'pb-20'
+                }`}
+            >
                 <AnimatePresence mode="wait" initial={false}>
                     {view === 'categories' && (
                         <motion.div
@@ -284,6 +286,7 @@ export default function LearnWordPage() {
                             animate={{ opacity: 1, x: 0 }}
                             exit={reduceMotion ? undefined : { opacity: 0, x: -24 }}
                             transition={{ duration: 0.25 }}
+                            className="flex flex-1 flex-col overflow-hidden"
                         >
                             <UnitBrowser
                                 category={activeCategory}
@@ -337,7 +340,6 @@ function UnitBrowser({
     const units = Array.from({ length: unitCount }, (_, i) => i + 1);
     const firstOpenUnit = units.find((unit) => !progress[unit]?.completed) ?? 1;
     const [selectedUnit, setSelectedUnit] = useState(firstOpenUnit);
-    const [mode, setMode] = useState<StudyMode>('review');
     const [session, setSession] = useState(0);
     const learnedAll = Math.min(
         total,
@@ -347,163 +349,124 @@ function UnitBrowser({
     const unitSize = (unit: number) => Math.max(0, Math.min(WORDS_PER_UNIT, total - (unit - 1) * WORDS_PER_UNIT));
     const openUnit = (unit: number) => {
         setSelectedUnit(unit);
-        setMode('review');
-        setSession((value) => value + 1);
-    };
-    const changeMode = (nextMode: StudyMode) => {
-        if (nextMode === mode) return;
-        setMode(nextMode);
         setSession((value) => value + 1);
     };
 
     return (
         <div className="flex flex-col overflow-hidden" style={{ height: '100%' }}>
-            <div className="shrink-0">
-                <button
-                    type="button"
-                    onClick={onBack}
-                    className="learn-back mb-4 inline-flex min-h-11 items-center gap-2 px-3 text-sm font-bold sm:px-4"
+            <button
+                type="button"
+                onClick={onBack}
+                className="learn-back mb-4 inline-flex shrink-0 min-h-11 items-center gap-2 px-3 text-sm font-bold sm:px-4"
+            >
+                <ArrowLeft size={17} aria-hidden="true" /> Tất cả cấp độ
+            </button>
+
+            <header className="mb-4 shrink-0 flex flex-wrap items-end justify-between gap-4 border-b border-line pb-5">
+                <div className="min-w-0">
+                    <h1 className="font-display flex flex-wrap items-center gap-3 text-[clamp(1.75rem,4vw,2.75rem)] font-extrabold leading-none tracking-[-0.035em] text-white">
+                        <span
+                            className={`inline-flex items-center rounded-md border px-3 py-1 text-sm font-bold ${toneFor(
+                                category.name,
+                            )}`}
+                        >
+                            {category.name}
+                        </span>
+                        <span>Unit {selectedUnit}</span>
+                    </h1>
+                    <p className="mt-3 text-sm text-muted">
+                        {total.toLocaleString('vi-VN')} từ · {unitCount} Unit · tiến độ được lưu tự động
+                    </p>
+                </div>
+                <div className="min-w-48 text-left sm:text-right">
+                    <p className="text-xs font-semibold text-muted">Toàn bộ</p>
+                    <p className="mt-1 font-bold tabular-nums text-white">
+                        {learnedAll}/{total} từ · <span className="text-signal">{pct}%</span>
+                    </p>
+                </div>
+            </header>
+
+            <label className="mb-4 shrink-0 block text-sm font-bold text-white lg:hidden">
+                Chọn Unit
+                <select
+                    value={selectedUnit}
+                    onChange={(event) => openUnit(Number(event.target.value))}
+                    className="arena-field mt-2"
                 >
-                    <ArrowLeft size={17} aria-hidden="true" /> Tất cả cấp độ
-                </button>
+                    {units.map((unit) => (
+                        <option key={unit} value={unit}>
+                            Unit {unit} · {progress[unit]?.learned ?? 0}/{unitSize(unit)} từ
+                        </option>
+                    ))}
+                </select>
+            </label>
 
-                <header className="mb-4 flex flex-wrap items-end justify-between gap-4 border-b border-line pb-5">
-                    <div className="min-w-0">
-                        <h1 className="font-display flex flex-wrap items-center gap-3 text-[clamp(1.75rem,4vw,2.75rem)] font-extrabold leading-none tracking-[-0.035em] text-white">
-                            <span
-                                className={`inline-flex items-center rounded-md border px-3 py-1 text-sm font-bold ${toneFor(
-                                    category.name,
-                                )}`}
-                            >
-                                {category.name}
-                            </span>
-                            <span>Unit {selectedUnit}</span>
-                        </h1>
-                        <p className="mt-3 text-sm text-muted">
-                            {total.toLocaleString('vi-VN')} từ · {unitCount} Unit · tiến độ được lưu tự động
-                        </p>
+            <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1.8fr)] overflow-hidden">
+                <aside className="learn-unit-list hidden p-3 lg:flex lg:flex-col lg:overflow-hidden">
+                    <div className="flex shrink-0 items-center justify-between px-2 pb-3 pt-1">
+                        <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted">Chọn Unit</h2>
+                        <span className="rounded-full border border-line bg-black/20 px-2 py-0.5 text-xs font-bold tabular-nums text-muted">
+                            {unitCount} Unit
+                        </span>
                     </div>
-                    <div className="min-w-48 text-left sm:text-right">
-                        <p className="text-xs font-semibold text-muted">Toàn bộ</p>
-                        <p className="mt-1 font-bold tabular-nums text-white">
-                            {learnedAll}/{total} từ · <span className="text-signal">{pct}%</span>
-                        </p>
+                    <div className="grid flex-1 gap-2 overflow-y-auto sm:grid-cols-2 lg:grid-cols-1">
+                        {units.map((unit, idx) => {
+                            const p = progress[unit];
+                            const completed = p?.completed ?? false;
+                            const size = unitSize(unit);
+                            const learned = Math.min(p?.learned ?? 0, size);
+                            const unitPct = size ? Math.round((learned / size) * 100) : 0;
+                            const status = completed ? 'Đã hoàn thành' : learned > 0 ? 'Đang học' : 'Chưa bắt đầu';
+                            return (
+                                <motion.button
+                                    key={unit}
+                                    type="button"
+                                    onClick={() => openUnit(unit)}
+                                    aria-pressed={selectedUnit === unit}
+                                    initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.22, delay: Math.min(idx * 0.025, 0.25) }}
+                                    className="learn-unit-option flex min-h-20 w-full items-center gap-3 p-3 text-left"
+                                >
+                                    <span className="grid size-11 shrink-0 place-items-center rounded-md border border-line bg-black/20 text-base font-extrabold tabular-nums text-white">
+                                        {unit}
+                                    </span>
+                                    <span className="min-w-0 flex-1">
+                                        <span className="block font-display font-extrabold text-white">
+                                            Unit {unit}
+                                        </span>
+                                        <span className="mt-0.5 block text-xs text-muted">
+                                            {learned}/{size} từ · {status}
+                                        </span>
+                                    </span>
+                                    {completed ? (
+                                        <span className="grid size-7 shrink-0 place-items-center rounded-full bg-signal text-black">
+                                            <Check size={15} strokeWidth={3} aria-hidden="true" />
+                                            <span className="sr-only">Đã hoàn thành</span>
+                                        </span>
+                                    ) : (
+                                        <span className="shrink-0 text-xs font-bold tabular-nums text-electric">
+                                            {unitPct}%
+                                        </span>
+                                    )}
+                                </motion.button>
+                            );
+                        })}
                     </div>
-                </header>
-
-                <label className="mb-4 block text-sm font-bold text-white lg:hidden">
-                    Chọn Unit
-                    <select
-                        value={selectedUnit}
-                        onChange={(event) => openUnit(Number(event.target.value))}
-                        className="arena-field mt-2"
-                    >
-                        {units.map((unit) => (
-                            <option key={unit} value={unit}>
-                                Unit {unit} · {progress[unit]?.learned ?? 0}/{unitSize(unit)} từ
-                            </option>
-                        ))}
-                    </select>
-                </label>
-
-                <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1.8fr)]">
-                    <aside className="learn-unit-list hidden p-3 lg:flex lg:flex-col lg:overflow-hidden">
-                        <div className="flex shrink-0 items-center justify-between px-2 pb-3 pt-1">
-                            <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted">Chọn Unit</h2>
-                            <span className="rounded-full border border-line bg-black/20 px-2 py-0.5 text-xs font-bold tabular-nums text-muted">
-                                {unitCount} Unit
-                            </span>
-                        </div>
-                        <div className="grid flex-1 gap-2 overflow-y-auto sm:grid-cols-2 lg:grid-cols-1">
-                            {units.map((unit, idx) => {
-                                const p = progress[unit];
-                                const completed = p?.completed ?? false;
-                                const size = unitSize(unit);
-                                const learned = Math.min(p?.learned ?? 0, size);
-                                const unitPct = size ? Math.round((learned / size) * 100) : 0;
-                                const status = completed ? 'Đã hoàn thành' : learned > 0 ? 'Đang học' : 'Chưa bắt đầu';
-                                return (
-                                    <motion.button
-                                        key={unit}
-                                        type="button"
-                                        onClick={() => openUnit(unit)}
-                                        aria-pressed={selectedUnit === unit}
-                                        initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.22, delay: Math.min(idx * 0.025, 0.25) }}
-                                        className="learn-unit-option flex min-h-20 w-full items-center gap-3 p-3 text-left"
-                                    >
-                                        <span className="grid size-11 shrink-0 place-items-center rounded-md border border-line bg-black/20 text-base font-extrabold tabular-nums text-white">
-                                            {unit}
-                                        </span>
-                                        <span className="min-w-0 flex-1">
-                                            <span className="block font-display font-extrabold text-white">
-                                                Unit {unit}
-                                            </span>
-                                            <span className="mt-0.5 block text-xs text-muted">
-                                                {learned}/{size} từ · {status}
-                                            </span>
-                                        </span>
-                                        {completed ? (
-                                            <span className="grid size-7 shrink-0 place-items-center rounded-full bg-signal text-black">
-                                                <Check size={15} strokeWidth={3} aria-hidden="true" />
-                                                <span className="sr-only">Đã hoàn thành</span>
-                                            </span>
-                                        ) : (
-                                            <span className="shrink-0 text-xs font-bold tabular-nums text-electric">
-                                                {unitPct}%
-                                            </span>
-                                        )}
-                                    </motion.button>
-                                );
-                            })}
-                        </div>
-                    </aside>
+                </aside>
 
                     <section className="min-w-0 overflow-y-auto">
-                        <div
-                            role="tablist"
-                            aria-label="Chế độ học"
-                            className="learn-mode-tabs mb-4 grid grid-cols-2 gap-1 p-1"
-                        >
-                            <button
-                                type="button"
-                                role="tab"
-                                aria-selected={mode === 'review'}
-                                onClick={() => changeMode('review')}
-                                className="learn-mode-tab inline-flex min-h-11 items-center justify-center gap-2 px-4 text-sm font-bold"
-                            >
-                                <RotateCw size={16} aria-hidden="true" /> Đoán từ
-                            </button>
-                            <button
-                                type="button"
-                                role="tab"
-                                aria-selected={mode === 'learn'}
-                                onClick={() => changeMode('learn')}
-                                className="learn-mode-tab inline-flex min-h-11 items-center justify-center gap-2 px-4 text-sm font-bold"
-                            >
-                                <BookOpen size={16} aria-hidden="true" /> Xem từ vựng
-                            </button>
-                        </div>
-
                         <UnitStudy
-                            key={`${selectedUnit}-${mode}-${session}`}
+                            key={`${selectedUnit}-${session}`}
                             categoryId={category.id}
                             unit={selectedUnit}
-                            mode={mode}
                             onComplete={onComplete}
                             onReplay={() => {
-                                setMode('review');
-                                setSession((value) => value + 1);
-                            }}
-                            onViewWords={() => {
-                                setMode('learn');
                                 setSession((value) => value + 1);
                             }}
                             reduceMotion={reduceMotion}
                         />
                     </section>
-                </div>
             </div>
         </div>
     );
@@ -512,18 +475,14 @@ function UnitBrowser({
 function UnitStudy({
     categoryId,
     unit,
-    mode,
     onComplete,
     onReplay,
-    onViewWords,
     reduceMotion,
 }: {
     categoryId: string;
     unit: number;
-    mode: StudyMode;
     onComplete: (categoryId: string, unit: number, learned: number, total: number) => void;
     onReplay: () => void;
-    onViewWords: () => void;
     reduceMotion: boolean | null;
 }) {
     // Server-side paging: only this unit's words are fetched, never the whole set.
@@ -531,7 +490,6 @@ function UnitStudy({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [index, setIndex] = useState(0);
-    const [flipped, setFlipped] = useState(false);
     const [learnedIds, setLearnedIds] = useState<Set<string>>(new Set());
     const [answer, setAnswer] = useState('');
     const [answerState, setAnswerState] = useState<AnswerState>('idle');
@@ -543,7 +501,6 @@ function UnitStudy({
         setLoading(true);
         setError(null);
         setIndex(0);
-        setFlipped(false);
         setLearnedIds(new Set());
         setAnswer('');
         setAnswerState('idle');
@@ -574,24 +531,6 @@ function UnitStudy({
 
     const card = cards[index];
 
-    const go = (delta: number) => {
-        setFlipped(false);
-        setAnswer('');
-        setAnswerState('idle');
-        setHintLevel(0);
-        setIndex((i) => Math.min(cards.length - 1, Math.max(0, i + delta)));
-    };
-
-    const toggleLearned = () => {
-        if (!card) return;
-        setLearnedIds((prev) => {
-            const next = new Set(prev);
-            if (next.has(card.card_id)) next.delete(card.card_id);
-            else next.add(card.card_id);
-            return next;
-        });
-    };
-
     const playAudio = () => {
         const audio = card?.phonetics?.find((p) => p.audio)?.audio;
         if (!audio) return;
@@ -600,14 +539,33 @@ function UnitStudy({
         });
     };
 
+    const playSystemSound = (name: 'correct' | 'wrong' | 'finish') => {
+        try {
+            new Audio(`/audios/system/${name}.mp3`).play().catch(() => {});
+        } catch {
+            /* ponytail: ignore */
+        }
+    };
+
     const checkAnswer = (event: React.FormEvent) => {
         event.preventDefault();
         if (!card) return;
         if (answerState === 'correct' || answerState === 'revealed') return;
         if (normalizeAnswer(answer) === normalizeAnswer(card.word)) {
-            setAnswer(card.word);
-            setAnswerState('correct');
+            playSystemSound('correct');
+            setLearnedIds((prev) => new Set(prev).add(card.card_id));
+            if (index < cards.length - 1) {
+                setAnswer('');
+                setAnswerState('idle');
+                setHintLevel(0);
+                setIndex((i) => i + 1);
+            } else {
+                // Last card — stay on it so "Hoàn thành" section renders
+                setAnswer(card.word);
+                setAnswerState('correct');
+            }
         } else {
+            playSystemSound('wrong');
             setAnswerState('wrong');
         }
     };
@@ -618,19 +576,13 @@ function UnitStudy({
         setAnswer(card.word);
         setAnswerState('revealed');
     };
-    const rateAnswer = (rating: AnswerRating) => {
-        if (!card) return;
-        if (rating === 'again') {
-            setAnswer('');
-            setAnswerState('idle');
-            setHintLevel(0);
-            return;
-        }
-        setLearnedIds((prev) => new Set(prev).add(card.card_id));
-        if (index < cards.length - 1) go(1);
-    };
 
     const done = index === cards.length - 1 && learnedIds.size === cards.length;
+
+    useEffect(() => {
+        if (done) playSystemSound('finish');
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only trigger on done transition
+    }, [done]);
 
     return (
         <>
@@ -682,110 +634,11 @@ function UnitStudy({
                         </div>
                     </div>
 
-                    {mode === 'learn' ? (
-                        <div className="perspective-[1600px]">
-                            <motion.div
-                                initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.25 }}
-                                className="learn-study-card relative min-h-[26rem] w-full text-left transform-3d"
-                                style={{
-                                    transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                                    transition: reduceMotion ? 'none' : 'transform var(--dur-long) var(--ease-in-out)',
-                                }}
-                                role="group"
-                                aria-label={`Thẻ từ ${card?.word}`}
-                            >
-                                {/* Front */}
-                                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 backface-hidden">
-                                    {card?.image_url ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img
-                                            src={card.image_url}
-                                            alt={`Minh họa cho từ ${card.word}`}
-                                            width={960}
-                                            height={640}
-                                            className="absolute inset-0 h-full w-full rounded-[var(--radius-card)] object-cover opacity-20"
-                                        />
-                                    ) : null}
-                                    <div className="relative text-center">
-                                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-electric">
-                                            {card?.type || 'từ'}
-                                        </p>
-                                        <h2 className="font-display mt-3 min-w-0 break-words text-[clamp(2.5rem,8vw,5rem)] font-extrabold leading-none tracking-[-0.045em] text-white">
-                                            {card?.word}
-                                        </h2>
-                                        {card?.phonetics?.[0]?.text && (
-                                            <p className="mt-3 text-base text-muted">{card.phonetics[0].text}</p>
-                                        )}
-                                        {card?.phonetics?.some((p) => p.audio) && (
-                                            <button
-                                                type="button"
-                                                onClick={playAudio}
-                                                className="learn-secondary mt-5 inline-flex min-h-11 items-center gap-2 px-4 text-sm font-bold"
-                                            >
-                                                <Volume2 size={16} aria-hidden="true" /> Phát âm
-                                            </button>
-                                        )}
-                                        <button
-                                            type="button"
-                                            onClick={() => setFlipped(true)}
-                                            className="learn-primary mx-auto mt-4 inline-flex min-h-11 items-center gap-2 px-5 text-sm font-bold"
-                                        >
-                                            <RotateCw size={16} aria-hidden="true" /> Xem nghĩa
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Back */}
-                                <div
-                                    className="absolute inset-0 flex flex-col justify-center gap-4 overflow-auto rounded-[var(--radius-card)] p-7 backface-hidden sm:p-10"
-                                    style={{ transform: 'rotateY(180deg)' }}
-                                >
-                                    <div>
-                                        <p className="text-xs font-bold uppercase tracking-[0.14em] text-electric">
-                                            Nghĩa
-                                        </p>
-                                        <p className="font-display mt-1 text-3xl font-extrabold text-white">
-                                            {card?.translation}
-                                        </p>
-                                    </div>
-                                    {card?.explanation?.vi && (
-                                        <div>
-                                            <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted">
-                                                Giải thích
-                                            </p>
-                                            <p className="mt-1 text-sm leading-6 text-muted">{card.explanation.vi}</p>
-                                        </div>
-                                    )}
-                                    {card?.example?.en && (
-                                        <div>
-                                            <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted">
-                                                Ví dụ
-                                            </p>
-                                            <p className="mt-1 text-sm italic text-white">“{card.example.en}”</p>
-                                            {card.example.vi && (
-                                                <p className="mt-0.5 text-sm text-muted">{card.example.vi}</p>
-                                            )}
-                                        </div>
-                                    )}
-                                    <button
-                                        type="button"
-                                        onClick={() => setFlipped(false)}
-                                        className="learn-secondary mt-2 inline-flex min-h-11 w-fit items-center gap-2 px-4 text-sm font-bold"
-                                    >
-                                        <RotateCw size={16} aria-hidden="true" /> Xem từ
-                                    </button>
-                                </div>
-                            </motion.div>
-                        </div>
-                    ) : (
                         <ReviewCard
                             card={card}
                             answer={answer}
                             answerState={answerState}
                             hintLevel={hintLevel}
-                            isLast={index === cards.length - 1}
                             reduceMotion={reduceMotion}
                             onAnswerChange={(value) => {
                                 setAnswer(value);
@@ -794,45 +647,8 @@ function UnitStudy({
                             onSubmit={checkAnswer}
                             onHint={showNextHint}
                             onReveal={revealAnswer}
-                            onRate={rateAnswer}
                             onPlayAudio={playAudio}
                         />
-                    )}
-
-                    {mode === 'learn' && (
-                        <div className="mt-5 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:gap-3">
-                            <button
-                                type="button"
-                                onClick={() => go(-1)}
-                                disabled={index === 0}
-                                className="learn-secondary inline-flex min-h-12 items-center gap-2 px-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-40 sm:px-4"
-                            >
-                                <ChevronLeft size={17} /> Trước
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={toggleLearned}
-                                className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-input)] px-3 text-sm font-bold sm:px-5 ${
-                                    learnedIds.has(card?.card_id ?? '')
-                                        ? 'learn-primary'
-                                        : 'learn-secondary border-signal/40 text-signal'
-                                }`}
-                            >
-                                <Check size={17} strokeWidth={3} />
-                                {learnedIds.has(card?.card_id ?? '') ? 'Đã thuộc' : 'Đánh dấu'}
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => go(1)}
-                                disabled={index === cards.length - 1}
-                                className="learn-secondary inline-flex min-h-12 items-center gap-2 px-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-40 sm:px-4"
-                            >
-                                Sau <ChevronRight size={17} />
-                            </button>
-                        </div>
-                    )}
 
                     <AnimatePresence>
                         {done && (
@@ -864,10 +680,10 @@ function UnitStudy({
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={onViewWords}
+                                        onClick={onReplay}
                                         className="learn-secondary inline-flex min-h-12 items-center justify-center gap-2 px-4 text-sm font-bold"
                                     >
-                                        <BookOpen size={17} aria-hidden="true" /> Xem từ vựng
+                                        <RotateCw size={17} aria-hidden="true" /> Luyện lại
                                     </button>
                                 </div>
                             </motion.section>
@@ -884,31 +700,34 @@ function ReviewCard({
     answer,
     answerState,
     hintLevel,
-    isLast,
     reduceMotion,
     onAnswerChange,
     onSubmit,
     onHint,
     onReveal,
-    onRate,
     onPlayAudio,
 }: {
     card: Card;
     answer: string;
     answerState: AnswerState;
     hintLevel: number;
-    isLast: boolean;
     reduceMotion: boolean | null;
     onAnswerChange: (value: string) => void;
     onSubmit: (event: React.FormEvent) => void;
     onHint: () => void;
     onReveal: () => void;
-    onRate: (rating: AnswerRating) => void;
     onPlayAudio: () => void;
 }) {
     const hint = getReviewHint(card.word, hintLevel);
     const resolved = answerState === 'correct' || answerState === 'revealed';
     const revealedAnswer = getAnswerReveal(card.word, hintLevel);
+
+    // Auto-play IPA audio when final hint is triggered
+    useEffect(() => {
+        if (hint.final && card.phonetics?.[0]?.audio) {
+            new Audio(card.phonetics[0].audio).play().catch(() => {});
+        }
+    }, [hint.final, card.phonetics]);
 
     return (
         <motion.div
@@ -936,22 +755,6 @@ function ReviewCard({
                     </span>
                 </div>
 
-                {card.phonetics?.[0]?.text && (
-                    <div className="mt-2 flex flex-wrap items-center justify-center gap-2 text-sm font-semibold text-electric">
-                        <span>{card.phonetics[0].text}</span>
-                        {card.phonetics.some((phonetic) => phonetic.audio) && (
-                            <button
-                                type="button"
-                                onClick={onPlayAudio}
-                                aria-label={`Nghe phát âm của ${card.word}`}
-                                className="learn-secondary grid size-11 place-items-center"
-                            >
-                                <Volume2 size={16} aria-hidden="true" />
-                            </button>
-                        )}
-                    </div>
-                )}
-
                 {card.explanation?.en && (
                     <div className="mx-auto mt-5 max-w-2xl">
                         <p className="text-xs font-bold text-electric">Định nghĩa tiếng Anh</p>
@@ -967,7 +770,24 @@ function ReviewCard({
                 {card.example?.en && (
                     <div className="mx-auto mt-4 max-w-2xl">
                         <p className="text-xs font-bold text-electric">Ví dụ</p>
-                        <p className="mt-1 text-sm italic text-white">“{maskAnswer(card.example.en, card.word)}”</p>
+                        <p className="mt-1 text-sm italic leading-relaxed text-white">
+                            {resolved
+                                ? (() => {
+                                    const escaped = card.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                                    const parts = card.example.en.split(new RegExp(`(${escaped})`, 'gi'));
+                                    return (
+                                        <>
+                                            “{parts.map((part, i) =>
+                                                part.toLowerCase() === card.word.toLowerCase()
+                                                    ? <span key={i} className="font-bold text-signal">{part}</span>
+                                                    : part
+                                            )}”
+                                        </>
+                                    );
+                                })()
+                                : `“${maskAnswer(card.example.en, card.word)}”`
+                            }
+                        </p>
                         {card.example.vi && <p className="mt-1 text-sm text-muted">{card.example.vi}</p>}
                     </div>
                 )}
@@ -998,6 +818,20 @@ function ReviewCard({
                                 </motion.span>
                             ))}
                         </p>
+                    ) : hint.final && card.phonetics?.[0]?.text ? (
+                        <div className="flex flex-wrap items-center justify-center gap-2 text-base font-semibold text-electric">
+                            <span>{card.phonetics[0].text}</span>
+                            {card.phonetics.some((p) => p.audio) && (
+                                <button
+                                    type="button"
+                                    onClick={onPlayAudio}
+                                    aria-label={`Nghe phát âm của ${card.word}`}
+                                    className="learn-secondary grid size-9 place-items-center"
+                                >
+                                    <Volume2 size={15} aria-hidden="true" />
+                                </button>
+                            )}
+                        </div>
                     ) : (
                         <p className="font-mono text-xl font-black tracking-[0.16em] text-white">{hint.pattern}</p>
                     )}
@@ -1039,6 +873,26 @@ function ReviewCard({
                     )}
                 </div>
 
+                {!resolved && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                        <button
+                            type="button"
+                            onClick={onHint}
+                            disabled={hint.final}
+                            className="learn-secondary inline-flex min-h-11 items-center justify-center gap-2 px-3 text-xs font-bold text-muted disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            {hint.final ? 'Đã hết gợi ý' : 'Gợi ý'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onReveal}
+                            className="learn-secondary inline-flex min-h-11 items-center justify-center gap-2 px-3 text-xs font-bold text-electric"
+                        >
+                            <Eye size={15} aria-hidden="true" /> Xem đáp án
+                        </button>
+                    </div>
+                )}
+
                 <div id="review-feedback" aria-live="polite" className="min-h-7 pt-2 text-sm font-bold">
                     {answerState === 'wrong' && (
                         <p className="flex items-center gap-2 text-danger-copy">
@@ -1047,7 +901,7 @@ function ReviewCard({
                     )}
                     {answerState === 'correct' && (
                         <p className="flex items-center gap-2 text-signal">
-                            <Check size={16} strokeWidth={3} /> Chính xác! Chọn mức độ ghi nhớ bên dưới.
+                            <Check size={16} strokeWidth={3} /> Chính xác!
                         </p>
                     )}
                     {answerState === 'revealed' && (
@@ -1056,67 +910,6 @@ function ReviewCard({
                         </p>
                     )}
                 </div>
-
-                {!resolved ? (
-                    <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                        <button
-                            type="button"
-                            onClick={onHint}
-                            className="learn-secondary inline-flex min-h-11 items-center justify-center gap-2 px-3 text-xs font-bold text-muted"
-                        >
-                            <kbd className="rounded border border-white/15 bg-black/25 px-1.5 py-0.5 font-mono text-white">
-                                `
-                            </kbd>
-                            Gợi ý
-                        </button>
-                        <button
-                            type="button"
-                            onClick={onReveal}
-                            className="learn-secondary inline-flex min-h-11 items-center justify-center gap-2 px-3 text-xs font-bold text-electric"
-                        >
-                            <Eye size={15} aria-hidden="true" /> Xem đáp án
-                            <span className="hidden items-center gap-1 text-[10px] text-muted sm:inline-flex">
-                                <kbd className="rounded border border-line px-1">Alt</kbd>+
-                                <kbd className="rounded border border-line px-1">A</kbd>
-                            </span>
-                        </button>
-                    </div>
-                ) : (
-                    <div
-                        role="group"
-                        aria-label="Tự đánh giá mức độ ghi nhớ"
-                        className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4"
-                    >
-                        <button
-                            type="button"
-                            onClick={() => onRate('again')}
-                            className="learn-secondary min-h-12 border-danger/50 px-3 text-sm font-bold text-danger-copy"
-                        >
-                            Học lại
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => onRate('hard')}
-                            className="learn-secondary min-h-12 border-electric/40 px-3 text-sm font-bold text-electric"
-                        >
-                            Khó
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => onRate('good')}
-                            className="learn-secondary min-h-12 border-signal/40 px-3 text-sm font-bold text-signal"
-                        >
-                            Tốt
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => onRate('easy')}
-                            className="learn-primary min-h-12 px-3 text-sm font-bold"
-                        >
-                            {isLast ? 'Hoàn tất' : 'Dễ'}
-                        </button>
-                    </div>
-                )}
             </form>
         </motion.div>
     );
