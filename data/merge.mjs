@@ -21,14 +21,14 @@ import chain from "stream-chain";
 const ROOT_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config({
-  path: path.join(ROOT_DIRECTORY, ".env"),
+  path: path.join(ROOT_DIRECTORY, ".env.local"),
 });
 
 // ======================================================
 // CẤU HÌNH ĐƯỜNG DẪN
 // ======================================================
 
-const INPUT_FILE_NAME = "B2.json";
+const INPUT_FILE_NAME = "C1.json";
 
 const INPUT_FILE_PATH = path.join(
   ROOT_DIRECTORY,

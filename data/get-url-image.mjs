@@ -11,7 +11,7 @@ const ROOT_DIRECTORY = path.dirname(
 );
 
 dotenv.config({
-  path: path.join(ROOT_DIRECTORY, ".env"),
+  path: path.join(ROOT_DIRECTORY, ".env.local"),
 });
 
 const PIXABAY_API_KEY = process.env.PIXABAY_API_KEY;
@@ -21,7 +21,7 @@ console.log(PIXABAY_API_KEY);
 
 if (!PIXABAY_API_KEY) {
   throw new Error(
-    "Thiếu PIXABAY_API_KEY trong file .env",
+    "Thiếu PIXABAY_API_KEY trong file .env.local",
   );
 }
 

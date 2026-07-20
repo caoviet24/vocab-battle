@@ -19,7 +19,7 @@ import { streamArray } from "stream-json/streamers/stream-array.js";
 const ROOT_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config({
-  path: path.join(ROOT_DIRECTORY, ".env"),
+  path: path.join(ROOT_DIRECTORY, ".env.local"),
 });
 
 // ======================================================
@@ -28,11 +28,15 @@ dotenv.config({
 
 const INPUT_FILE_NAME = "C1.json";
 
-const INPUT_FILE_PATH = path.join(ROOT_DIRECTORY, "output", INPUT_FILE_NAME);
+const INPUT_FILE_PATH = path.join(
+  ROOT_DIRECTORY,
+  "PHRASE_VER",
+  INPUT_FILE_NAME,
+);
 
 const OUTPUT_FILE_PATH = path.join(
   ROOT_DIRECTORY,
-  "output",
+  "PHRASE_VER",
   INPUT_FILE_NAME.replace(/\.json$/i, "") + ".translated.json",
 );
 
@@ -41,7 +45,7 @@ const OUTPUT_FILE_PATH = path.join(
 // ======================================================
 
 /**
- * File .env:
+ * File .env.local:
  *
  * DLX_BASE_URL=https://dlx.domain.com
  * DLX_TOKEN=your-token

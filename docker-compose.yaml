@@ -18,30 +18,12 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     container_name: vocab_backend
     ports:
-      - "${BIND_HOST:?Missing BIND_HOST}:${BACKEND_DOCKER_PORT:?Missing BACKEND_DOCKER_PORT}:${BACKEND_PORT:?Missing BACKEND_PORT}"
-    environment:
-      MONGO_URI: "${MONGO_DOCKER_URI:?Missing MONGO_DOCKER_URI}"
-      DB_NAME: "${DB_NAME:?Missing DB_NAME}"
-      PORT: "${BACKEND_PORT:?Missing BACKEND_PORT}"
-      GIN_MODE: "${GIN_MODE:?Missing GIN_MODE}"
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    restart: unless-stopped
-
-  backend-dotnet:
-    build:
-      context: ./backend-dotnet
-      dockerfile: Dockerfile
-    container_name: vocab_backend_dotnet
-    ports:
-      - "${BIND_HOST:-127.0.0.1}:${BACKEND_DOTNET_DOCKER_PORT:-8082}:${BACKEND_PORT:-8080}"
+      - "${BIND_HOST:-127.0.0.1}:${BACKEND_DOCKER_PORT:-8082}:${BACKEND_PORT:-8080}"
     environment:
       MONGO_URI: "${MONGO_DOCKER_URI:-mongodb://mongodb:27017}"
-      DB_NAME: "${DB_NAME:-vocab_battle}"
       PORT: "${BACKEND_PORT:-8080}"
     depends_on:
       mongodb:
@@ -50,7 +32,7 @@ services:
 
   client:
     build:
-      context: ./vocab-battle-client
+      context: ./client
       dockerfile: dockerfile
       args:
         NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL:?Missing NEXT_PUBLIC_API_URL}"
@@ -60,6 +42,8 @@ services:
       - "${BIND_HOST:?Missing BIND_HOST}:${CLIENT_DOCKER_PORT:?Missing CLIENT_DOCKER_PORT}:${CLIENT_INTERNAL_PORT:?Missing CLIENT_INTERNAL_PORT}"
     environment:
       PORT: "${CLIENT_INTERNAL_PORT:?Missing CLIENT_INTERNAL_PORT}"
+    volumes:
+      - image_uploads:/app/storage/uploads
     depends_on:
       - backend
     restart: unless-stopped
@@ -67,3 +51,4 @@ services:
 
 volumes:
   mongo_data:
+  image_uploads:
