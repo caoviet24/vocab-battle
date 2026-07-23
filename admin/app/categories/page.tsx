@@ -101,11 +101,11 @@ export default function CategoriesPage() {
       }
       saved = true;
       if (editing?.image_url && editing.image_url !== finalImageUrl) {
-        await deleteUploadedImage(editing.image_url);
+        await deleteUploadedImage(editing.image_url, "category");
       }
       setShowForm(false);
     } catch (error) {
-      if (!saved && uploadedUrl) await deleteUploadedImage(uploadedUrl).catch(() => undefined);
+      if (!saved && uploadedUrl) await deleteUploadedImage(uploadedUrl, "category").catch(() => undefined);
       setFormError(error instanceof Error ? error.message : "Không thể lưu danh mục.");
     } finally {
       setUploading(false);
@@ -116,25 +116,26 @@ export default function CategoriesPage() {
     if (!confirm(`Xóa danh mục "${category.name}"? Các từ vựng thuộc danh mục sẽ không bị xóa.`)) return;
     try {
       await deleteCategory(category.category_id);
-      await deleteUploadedImage(category.image_url);
+      await deleteUploadedImage(category.image_url, "category");
     } catch (error) {
       alert(error instanceof Error ? error.message : "Không thể xóa danh mục");
     }
   };
 
   return (
-    <>
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-line pb-6">
-        <div>
-          <p className="mb-2 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-electric">
+    <main id="main-content" className="admin-dashboard flex-1">
+      <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
+      <header className="flex flex-col gap-6 border-b border-line pb-8 sm:flex-row sm:items-end sm:justify-between sm:pb-10">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-electric">
             Nội dung học
           </p>
-          <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+          <h1 className="mt-3 min-w-0 max-w-[16ch] break-words font-display text-[clamp(2.5rem,6vw,4.5rem)] font-extrabold leading-[0.94] tracking-[-0.06em] text-foreground">
             Danh mục từ vựng
           </h1>
-          <p className="mt-2 text-sm text-muted">{categories.length} bộ từ đang hoạt động</p>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-muted">Tạo và chỉnh sửa các bộ từ để giữ nội dung học dễ tìm, dễ vận hành.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={() => void refreshCategories()}
@@ -155,27 +156,33 @@ export default function CategoriesPage() {
       </header>
 
       {loading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Đang tải danh mục">
+        <div className="mt-8 grid gap-4 sm:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]" aria-label="Đang tải danh mục">
           {[0, 1, 2].map((item) => (
-            <div key={item} className="h-72 animate-pulse rounded-xl border border-line bg-surface" />
+            <div key={item} className={`h-72 animate-pulse rounded-xl border border-line bg-surface ${item === 0 ? "sm:col-span-2" : ""}`} />
           ))}
         </div>
       ) : categories.length === 0 ? (
-        <section className="grid min-h-72 place-items-center rounded-xl border border-dashed border-line bg-surface/60 p-8 text-center">
+        <section className="mt-8 grid min-h-72 place-items-center rounded-xl border border-dashed border-line bg-surface/60 p-8 text-center">
           <div>
             <ImagePlus className="mx-auto text-electric" size={30} aria-hidden="true" />
             <h2 className="font-display mt-4 text-xl font-bold">Chưa có danh mục</h2>
             <p className="mt-1 text-sm text-muted">Tạo bộ từ đầu tiên và thêm ảnh nhận diện.</p>
+            <button type="button" onClick={() => resetForm()} className="mt-5 min-h-11 rounded-lg bg-signal px-4 text-sm font-bold text-background transition hover:brightness-105">Tạo danh mục</button>
           </div>
         </section>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="mt-8 overflow-hidden rounded-xl border border-line bg-surface shadow-panel">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface-raised px-4 py-3 sm:px-5">
+            <p className="font-display text-lg font-extrabold tracking-[-0.03em]">Danh mục hiện có <span className="font-mono text-sm font-semibold text-electric">{categories.length}</span></p>
+            <p className="text-sm text-muted">Chọn một mục để chỉnh sửa</p>
+          </div>
+          <div className="divide-y divide-line">
           {categories.map((category) => (
             <article
               key={category.category_id}
-              className="group overflow-hidden rounded-xl border border-line bg-surface transition hover:-translate-y-0.5 hover:border-electric/40 hover:shadow-panel"
+              className="group grid grid-cols-[4.5rem_minmax(0,1fr)_auto] gap-3 p-3 transition hover:bg-surface-raised sm:grid-cols-[6.5rem_minmax(0,1fr)_auto] sm:gap-5 sm:p-4"
             >
-              <div className="relative aspect-[16/9] overflow-hidden border-b border-line bg-surface-raised">
+              <div className="relative aspect-square overflow-hidden rounded-lg border border-line bg-surface-raised">
                 {category.image_url ? (
                   <div
                     role="img"
@@ -188,51 +195,42 @@ export default function CategoriesPage() {
                     <ImageIcon size={30} strokeWidth={1.5} aria-hidden="true" />
                   </div>
                 )}
-                <span className="absolute left-3 top-3 rounded-md border border-white/15 bg-background/80 px-2 py-1 font-mono text-[0.68rem] font-bold uppercase tracking-wider backdrop-blur">
-                  Category
-                </span>
               </div>
-              <div className="p-4">
-                <div className="flex min-h-20 items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h2 className="font-display truncate text-xl font-bold">{category.name}</h2>
-                    <p className="mt-1 line-clamp-2 text-sm leading-6 text-muted">
-                      {category.description || "Chưa có mô tả"}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 gap-1">
-                    <button
-                      type="button"
-                      onClick={() => resetForm(category)}
-                      className="grid size-10 place-items-center rounded-lg border border-line bg-surface-raised text-muted transition hover:border-electric/50 hover:text-electric"
-                      aria-label={`Sửa ${category.name}`}
-                      title="Sửa"
-                    >
-                      <Pencil size={15} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void remove(category)}
-                      className="grid size-10 place-items-center rounded-lg border border-danger/30 bg-danger/10 text-danger transition hover:bg-danger/20"
-                      aria-label={`Xóa ${category.name}`}
-                      title="Xóa"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </div>
+              <div className="min-w-0 self-center">
+                <h2 className="truncate font-display text-lg font-extrabold tracking-[-0.03em] text-foreground sm:text-xl">{category.name}</h2>
+                <p className="mt-1 line-clamp-2 max-w-3xl text-sm leading-6 text-muted">{category.description || "Chưa có mô tả"}</p>
+                <p className="mt-2 font-mono text-xs text-muted">Tạo ngày {new Date(category.created_at).toLocaleDateString("vi-VN")}</p>
+              </div>
+              <div className="flex shrink-0 self-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => resetForm(category)}
+                  className="grid size-11 place-items-center rounded-lg border border-line bg-surface text-muted transition hover:border-electric/50 hover:text-electric"
+                  aria-label={`Sửa ${category.name}`}
+                  title="Sửa"
+                >
+                  <Pencil size={15} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void remove(category)}
+                  className="grid size-11 place-items-center rounded-lg border border-danger/30 bg-danger/10 text-danger transition hover:bg-danger/20"
+                  aria-label={`Xóa ${category.name}`}
+                  title="Xóa"
+                >
+                  <Trash2 size={15} />
+                </button>
                 </div>
-                <p className="mt-3 border-t border-line pt-3 font-mono text-xs text-muted">
-                  Tạo ngày {new Date(category.created_at).toLocaleDateString("vi-VN")}
-                </p>
-              </div>
             </article>
           ))}
-        </div>
+          </div>
+        </section>
       )}
+      </section>
 
       {showForm && (
         <div
-          className="fixed inset-0 z-30 grid place-items-center overflow-y-auto bg-background/80 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[var(--z-modal)] grid place-items-center overflow-y-auto bg-background/80 p-4 backdrop-blur-sm"
           onMouseDown={(event) => {
             if (event.currentTarget === event.target) closeForm();
           }}
@@ -333,7 +331,7 @@ export default function CategoriesPage() {
                   rows={4}
                   maxLength={500}
                   placeholder="Nội dung và trình độ phù hợp với bộ từ này"
-                  className="arena-field resize-none"
+                  className="arena-field resize-y"
                 />
 
                 {formError && (
@@ -365,6 +363,6 @@ export default function CategoriesPage() {
           </form>
         </div>
       )}
-    </>
+    </main>
   );
 }

@@ -17,6 +17,7 @@ public static class DependencyInjection
         services.AddSwaggerGen();
         services.AddCors(options => options.AddDefaultPolicy(policy =>
             policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+        services.AddSingleton<CardPayloadCipher>();
         services.AddScoped<GameHub>();
         return services;
     }

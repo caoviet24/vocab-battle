@@ -86,7 +86,7 @@ public sealed class GameRoomManager : IGameRoomManager
 
             session.Clients.TryGetValue(connection.PlayerId, out previous);
             session.Clients[connection.PlayerId] = client;
-            joined = session.Room.AddPlayer(connection.PlayerId, connection.PlayerName);
+            joined = session.Room.AddPlayer(connection.PlayerId, connection.PlayerName, connection.FrameUrl);
             players = MapPlayers(session);
         }
 

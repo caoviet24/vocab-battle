@@ -1,0 +1,127 @@
+/* Hallmark · component: H9 custom illustration · tone: focused-playful · anchor hue: phosphor */
+.mascot {
+  --mascot-size: 176px;
+  width: min(var(--mascot-size), 100%);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.rabbit,
+.leftEar,
+.rightEar,
+.head,
+.book,
+.leftPaw,
+.rightPaw,
+.pencil,
+.star,
+.shadow {
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.fur { fill: color-mix(in oklch, var(--color-accent) 72%, var(--color-paper-3)); }
+.furLight,
+.belly { fill: color-mix(in oklch, var(--color-paper) 76%, var(--color-accent)); }
+.innerEar { fill: var(--color-info); }
+.face { fill: var(--color-paper); }
+.eye { fill: var(--color-ink); }
+.eyeLight { fill: var(--color-paper); }
+.nose { fill: var(--color-error); }
+.shadow { fill: var(--color-overlay); }
+
+.brow,
+.glasses,
+.mouth,
+.pawLine,
+.bookSpine,
+.bookLine,
+.star {
+  fill: none;
+  stroke: var(--color-ink);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.brow { stroke-width: 7px; }
+.glasses { stroke-width: 7px; }
+.mouth,
+.pawLine { stroke-width: 4px; }
+.bookSpine { stroke-width: 4px; }
+.bookLine { stroke-width: 3px; opacity: 0.38; }
+.star { stroke: var(--color-info); stroke-width: 6px; }
+
+.bookLeft { fill: var(--color-info); }
+.bookRight { fill: var(--color-accent); }
+.pencil { fill: var(--color-error); transform-origin: 289px 222px; }
+.pencilTip { fill: var(--color-paper); }
+.leftEar { transform-origin: 125px 145px; }
+.rightEar { transform-origin: 260px 142px; }
+.book { transform-origin: 202px 337px; }
+
+.animated .rabbit { animation: study-breathe 3.1s var(--ease-in-out) infinite; }
+.animated .shadow { animation: study-shadow 3.1s var(--ease-in-out) infinite; }
+.animated .leftEar { animation: ear-left 3.1s var(--ease-in-out) infinite; }
+.animated .rightEar { animation: ear-right 3.1s var(--ease-in-out) infinite; }
+.animated .book { animation: page-turn 3.1s var(--ease-in-out) infinite; }
+.animated .pencil { animation: note 1.2s var(--ease-in-out) infinite; }
+.animated .star { animation: star-pop 3.1s var(--ease-out) infinite; }
+
+@keyframes study-breathe {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  45% { transform: translateY(-5px) rotate(-0.7deg); }
+  72% { transform: translateY(-2px) rotate(0.5deg); }
+}
+
+@keyframes study-shadow {
+  0%, 100% { transform: scaleX(1); opacity: 0.7; }
+  45% { transform: scaleX(0.86); opacity: 0.42; }
+}
+
+@keyframes ear-left {
+  0%, 100% { transform: rotate(-3deg); }
+  45% { transform: rotate(5deg); }
+}
+
+@keyframes ear-right {
+  0%, 100% { transform: rotate(3deg); }
+  45% { transform: rotate(-5deg); }
+}
+
+@keyframes page-turn {
+  0%, 62%, 100% { transform: rotate(0deg); }
+  76% { transform: rotate(-4deg) translateY(-2px); }
+  88% { transform: rotate(1deg); }
+}
+
+@keyframes note {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  50% { transform: rotate(-10deg) translateY(4px); }
+}
+
+@keyframes star-pop {
+  0%, 48%, 100% { transform: scale(0.3) rotate(0deg); opacity: 0; }
+  62% { transform: scale(1) rotate(90deg); opacity: 1; }
+  78% { transform: scale(0.7) rotate(130deg); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animated .rabbit,
+  .animated .shadow,
+  .animated .leftEar,
+  .animated .rightEar,
+  .animated .book,
+  .animated .pencil,
+  .animated .star { animation: none; }
+
+  .star { opacity: 0.8; }
+}

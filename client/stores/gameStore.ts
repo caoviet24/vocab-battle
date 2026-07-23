@@ -4,6 +4,8 @@ import type { GameState } from '@/types/type';
 export const useGameStore = create<GameState>((set) => ({
    myPlayerId: '',
    myName: '',
+   myAvatarUrl: '',
+   myFrameUrl: '',
    roomCode: '',
    isHost: false,
    hasPassword: false,
@@ -20,6 +22,7 @@ export const useGameStore = create<GameState>((set) => ({
    phoneticsData: null,
    lastTotalRounds: 0,
    setMyInfo: (myPlayerId, myName) => set({ myPlayerId, myName }),
+   setMyProfile: (myAvatarUrl, myFrameUrl) => set({ myAvatarUrl, myFrameUrl }),
    setRoomCode: (roomCode) => set({ roomCode }),
    setIsHost: (isHost) => set({ isHost }),
    setHasPassword: (hasPassword) => set({ hasPassword }),

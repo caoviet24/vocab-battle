@@ -20,6 +20,7 @@ builder.Services.AddApiService();
 
 
 var app = builder.Build();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCors();

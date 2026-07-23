@@ -1,0 +1,89 @@
+/* Hallmark · design-system: design.md · theme: custom
+ * vibe: "focused learning arena, warm precision" · axes: dark / geometric-sans / chromatic-phosphor
+ * Hallmark · pre-emit critique: P5 H5 E4 S5 R5 V4
+ */
+:root {
+  --color-paper: oklch(14% 0.018 235);
+  --color-paper-2: oklch(18% 0.02 235);
+  --color-paper-3: oklch(22% 0.022 235);
+  --color-ink: oklch(95% 0.012 105);
+  --color-ink-2: oklch(78% 0.016 220);
+  --color-rule: oklch(31% 0.024 235);
+  --color-rule-2: oklch(25% 0.022 235);
+  --color-muted: oklch(70% 0.018 225);
+  --color-neutral: oklch(56% 0.02 230);
+  --color-accent: oklch(88% 0.19 116);
+  --color-accent-ink: oklch(18% 0.025 116);
+  --color-info: oklch(79% 0.13 210);
+  --color-focus: oklch(82% 0.17 210);
+  --color-error: oklch(68% 0.2 25);
+  --color-error-ink: oklch(88% 0.09 24);
+  --color-success: oklch(82% 0.17 145);
+  --color-overlay: oklch(8% 0.018 235 / 0.72);
+
+  --font-display: var(--font-bricolage), sans-serif;
+  --font-body: var(--font-plex), sans-serif;
+  --font-outlier: var(--font-plex-mono), monospace;
+
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4.5rem;
+  --space-3xl: 7rem;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.25rem;
+  --text-lg: 1.5625rem;
+  --text-xl: 1.953rem;
+  --text-2xl: 2.441rem;
+  --text-display: clamp(2.75rem, 5vw + 1rem, 5.25rem);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+
+  --rule-hair: 1px;
+  --rule-fine: 2px;
+  --radius-card: 0.75rem;
+  --radius-pill: 999px;
+  --radius-input: 0.5rem;
+  --shadow-card: 0 18px 55px oklch(5% 0.018 235 / 0.3);
+
+  --z-base: 1;
+  --z-raised: 10;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+}
+
+[data-theme="light"] {
+  --color-paper: oklch(97% 0.014 112);
+  --color-paper-2: oklch(94% 0.017 112);
+  --color-paper-3: oklch(90% 0.021 112);
+  --color-ink: oklch(20% 0.022 235);
+  --color-ink-2: oklch(34% 0.024 235);
+  --color-rule: oklch(78% 0.022 112);
+  --color-rule-2: oklch(86% 0.02 112);
+  --color-muted: oklch(44% 0.024 230);
+  --color-neutral: oklch(52% 0.022 230);
+  --color-accent: oklch(45% 0.15 116);
+  --color-accent-ink: oklch(98% 0.012 112);
+  --color-info: oklch(42% 0.13 220);
+  --color-focus: oklch(32% 0.12 220);
+  --color-error: oklch(54% 0.2 25);
+  --color-error-ink: oklch(42% 0.18 25);
+  --color-success: oklch(44% 0.14 145);
+  --color-overlay: oklch(12% 0.018 235 / 0.56);
+  --shadow-card: 0 18px 45px oklch(30% 0.03 112 / 0.12);
+}

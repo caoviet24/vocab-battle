@@ -1,12 +1,30 @@
 [
   {
-    "date": "2026-07-20",
-    "scope": "app",
+    "date": "2026-07-23",
+    "macrostructure": "Workbench — battle stage and player rail",
+    "theme": "custom",
+    "enrichment": "none",
+    "brief": "Room battle UI redesign; gameplay and realtime logic preserved"
+  },
+  {
+    "date": "2026-07-23",
+    "macrostructure": "Marquee Hero",
+    "theme": "custom",
+    "enrichment": "H9 hand-built SVG welcome mascot",
+    "brief": "Home welcome mascot and hero ready bay; battle flow preserved"
+  },
+  {
+    "date": "2026-07-21",
+    "macrostructure": "Workbench — learning split",
+    "theme": "custom",
+    "enrichment": "none",
+    "brief": "Learn-word catalogue and Unit workspace redesign; ReviewCard preserved"
+  },
+  {
+    "date": "2026-07-21",
     "macrostructure": "Workbench",
     "theme": "custom",
-    "theme_axes": "dark / geometric-sans / chromatic-phosphor",
-    "vibe": "focused learning arena, warm precision",
     "enrichment": "none",
-    "brief": "Vocab Battle learn-word and Clerk auth/profile redesign"
+    "brief": "Shared application header and statement footer"
   }
 ]

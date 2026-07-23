@@ -45,6 +45,17 @@ public static class MongoDocumentMapper
         CreatedAt = category.CreatedAt == default ? DateTime.UtcNow : category.CreatedAt
     };
 
+    public static Frame ToDomain(FrameDocument document) =>
+        new(document.Id.ToString(), document.Name, document.Url, document.CreatedAt);
+
+    public static FrameDocument ToDocument(Frame frame) => new()
+    {
+        Id = ParseOrNew(frame.Id),
+        Name = frame.Name,
+        Url = frame.Url,
+        CreatedAt = frame.CreatedAt == default ? DateTime.UtcNow : frame.CreatedAt
+    };
+
     private static ObjectId ParseOrNew(string id) =>
         !string.IsNullOrEmpty(id) && ObjectId.TryParse(id, out var objectId) ? objectId : ObjectId.GenerateNewId();
 }

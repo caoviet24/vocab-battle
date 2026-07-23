@@ -2,8 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const { MongoClient } = require("mongodb");
 
-const uri = "mongodb://127.0.0.1:27017";
-const dbName = "vocab_battle";
+const uri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017";
+const dbName = process.env.DB_NAME || "vocab_battle_prod";
 
 if (!uri || !dbName) {
   throw new Error("MONGO_URI and DB_NAME environment variables are required");
@@ -25,6 +25,7 @@ function getCategoryDescription(categoryName) {
     BAND_4_5_IELTS: "Bộ từ vựng IELTS Band 4.5",
     "900_B1": "Bộ từ vựng tiếng anh trình độ B1",
     "1600_B2": "Bộ từ vựng tiếng anh trình độ B2",
+    C1: "Bộ từ vựng tiếng anh trình độ C1",
   };
 
   return (
@@ -282,8 +283,8 @@ async function seedData() {
     console.log(`📂 Thư mục dữ liệu: ${dataDir}`);
 
     const db = client.db(dbName);
-    const categoryCollection = db.collection("categories");
-    const cardCollection = db.collection("cards");
+    const categoryCollection = db.collection("categories2");
+    const cardCollection = db.collection("cards2");
 
     /*
      * Tạo index để bảo đảm:

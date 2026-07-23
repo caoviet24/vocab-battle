@@ -35,14 +35,14 @@ public sealed class GameRoom(string code)
 
     public bool VerifyPassword(string submitted) => Password.Length == 0 || Password == submitted;
 
-    public bool AddPlayer(string playerId, string name)
+    public bool AddPlayer(string playerId, string name, string frameUrl = "")
     {
         if (_players.ContainsKey(playerId))
         {
             return false;
         }
 
-        _players[playerId] = new Player(playerId, name);
+        _players[playerId] = new Player(playerId, name, frameUrl);
         return true;
     }
 

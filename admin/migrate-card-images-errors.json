@@ -1,0 +1,16 @@
+[
+  {
+    "card_id": "6a6181729df5c1c4f6bbad57",
+    "word": "fulfill",
+    "category_id": "6a6181729df5c1c4f6bbad13",
+    "image_url": "https://assets.parroto.app/decks/68f2173c5e2ac8381d780dc8/images/68f2173f5e2ac8381d780f7e_1760725929534.webp/image/webp",
+    "error": "card 6a6181729df5c1c4f6bbad57 (fulfill) in category 6a6181729df5c1c4f6bbad13: https://assets.parroto.app/decks/68f2173c5e2ac8381d780dc8/images/68f2173f5e2ac8381d780f7e_1760725929534.webp/image/webp: unsupported image type audio/mpeg; expected JPEG, PNG, or WebP"
+  },
+  {
+    "card_id": "6a6181739df5c1c4f6bbbb64",
+    "word": "adjacent",
+    "category_id": "6a6181739df5c1c4f6bbbb46",
+    "image_url": "https://voca-land.sgp1.cdn.digitaloceanspaces.com/-1/1635652412327/adjacent.gif",
+    "error": "card 6a6181739df5c1c4f6bbbb64 (adjacent) in category 6a6181739df5c1c4f6bbbb46: https://voca-land.sgp1.cdn.digitaloceanspaces.com/-1/1635652412327/adjacent.gif: unsupported image type image/gif; expected JPEG, PNG, or WebP"
+  }
+]

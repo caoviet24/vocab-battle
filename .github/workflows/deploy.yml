@@ -16,4 +16,7 @@ jobs:
     runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v6
-      - run: docker compose --env-file "$HOME/.config/vocab-battle/.env.product" up -d --build --remove-orphans
+      - env:
+          NEXT_PUBLIC_API_URL: https://api.urms.io.vn
+          NEXT_PUBLIC_WS_URL: wss://api.urms.io.vn
+        run: docker compose --env-file "$HOME/.config/vocab-battle/.env.product" up -d --build --remove-orphans

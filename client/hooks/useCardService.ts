@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/services/api";
+import { decryptCardPayload } from "@/lib/card-payload";
 import type {
   Card,
   CardForm,
@@ -15,14 +16,14 @@ export function useCardService(query: CardQuery) {
   const cardsQuery = useQuery({
     queryKey: ["cards", query],
     queryFn: async () => {
-      const { data } = await api.get<PagedResult<Card>>("/cards", {
+      const { data } = await api.get<{ iv: string; ciphertext: string }>("/cards", {
         params: {
           ...query,
           categoryId: query.categoryId || undefined,
           search: query.search || undefined,
         },
       });
-      return data;
+      return decryptCardPayload<PagedResult<Card>>(data);
     },
   });
   const invalidateCards = () =>

@@ -1,5 +1,6 @@
 using MediatR;
 using VocabBattle.Api.Infrastructures;
+using VocabBattle.Api.Serialization;
 using VocabBattle.Application.Dtos;
 using VocabBattle.Application.Features.Cards.Commands;
 using VocabBattle.Application.Features.Cards.Queries;
@@ -19,6 +20,7 @@ public sealed class CardsEndpoints : EndpointGroupBase
 
     public async Task<IResult> GetCards(
         ISender sender,
+        CardPayloadCipher cipher,
         string? categoryId,
         string? search,
         int? page,
@@ -30,7 +32,7 @@ public sealed class CardsEndpoints : EndpointGroupBase
             search,
             Math.Max(page ?? 1, 1),
             Math.Clamp(pageSize ?? 20, 1, 200));
-        return Results.Ok(await sender.Send(query, cancellationToken));
+        return Results.Ok(cipher.Encrypt(await sender.Send(query, cancellationToken)));
     }
 
     public async Task<IResult> CreateCard(

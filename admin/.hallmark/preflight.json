@@ -1,0 +1,9 @@
+{
+  "date": "2026-07-20",
+  "framework": "Next.js 16 app router",
+  "styling": "Tailwind CSS v4",
+  "font": "Bricolage Grotesque + IBM Plex Sans/Mono via next/font",
+  "palette": "dark/light CSS variables with phosphor lime and cyan",
+  "motion": "Framer Motion 12",
+  "spacing": "Tailwind defaults with 4-point-compatible values"
+}

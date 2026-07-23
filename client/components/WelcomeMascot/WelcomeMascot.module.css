@@ -1,0 +1,209 @@
+/* Hallmark · macrostructure: Marquee Hero · component: H9 custom illustration · tone: playful-competitive · anchor hue: phosphor
+ * pre-emit critique: P5 H5 E5 S5 R5 V5 · contrast: pass (40–41) · responsive: pass (34, 49–57)
+ */
+.mascot {
+  --mascot-size: 300px;
+  width: min(var(--mascot-size), 100%);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.rabbit,
+.leftEar,
+.rightEar,
+.head,
+.waveArm,
+.heldArm,
+.spark,
+.ribbon,
+.shadow {
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.fur {
+  fill: color-mix(in oklch, var(--color-accent) 72%, var(--color-paper-3));
+}
+
+.furLight,
+.belly {
+  fill: color-mix(in oklch, var(--color-paper) 76%, var(--color-accent));
+}
+
+.innerEar,
+.ribbon {
+  fill: var(--color-info);
+}
+
+.face {
+  fill: var(--color-paper);
+}
+
+.brow,
+.glasses,
+.mouth,
+.pawLine,
+.spark {
+  fill: none;
+  stroke: var(--color-ink);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.brow {
+  stroke-width: 7px;
+}
+
+.glasses {
+  stroke-width: 7px;
+}
+
+.eye {
+  fill: var(--color-ink);
+}
+
+.eyeLight {
+  fill: var(--color-paper);
+}
+
+.nose {
+  fill: var(--color-error);
+}
+
+.mouth,
+.pawLine {
+  stroke-width: 4px;
+}
+
+.spark {
+  stroke: var(--color-info);
+  stroke-width: 6px;
+  opacity: 0;
+}
+
+.shadow {
+  fill: var(--color-overlay);
+}
+
+.leftEar {
+  transform-origin: 125px 145px;
+}
+
+.rightEar {
+  transform-origin: 260px 142px;
+}
+
+.waveArm {
+  transform-origin: 257px 275px;
+}
+
+.ribbon {
+  transform-origin: 98px 271px;
+}
+
+.animated .rabbit {
+  animation: welcome-float 2.8s var(--ease-in-out) infinite;
+}
+
+.animated .shadow {
+  animation: welcome-shadow 2.8s var(--ease-in-out) infinite;
+}
+
+.animated .leftEar {
+  animation: ear-left 2.8s var(--ease-in-out) infinite;
+}
+
+.animated .rightEar {
+  animation: ear-right 2.8s var(--ease-in-out) infinite;
+}
+
+.animated .waveArm {
+  animation: wave 1.4s var(--ease-in-out) infinite;
+}
+
+.animated .ribbon {
+  animation: ribbon-float 2.8s var(--ease-in-out) infinite;
+}
+
+.animated .sparkOne {
+  animation: sparkle 2.8s var(--ease-out) infinite;
+}
+
+.animated .sparkTwo {
+  animation: sparkle 2.8s 0.55s var(--ease-out) infinite;
+}
+
+.animated .sparkThree {
+  animation: sparkle 2.8s 1.15s var(--ease-out) infinite;
+}
+
+@keyframes welcome-float {
+  0%,
+  100% { transform: translateY(0) rotate(0deg); }
+  42% { transform: translateY(-9px) rotate(-1.5deg); }
+  68% { transform: translateY(-3px) rotate(1deg); }
+}
+
+@keyframes welcome-shadow {
+  0%,
+  100% { transform: scaleX(1); opacity: 0.72; }
+  42% { transform: scaleX(0.8); opacity: 0.4; }
+}
+
+@keyframes ear-left {
+  0%,
+  100% { transform: rotate(-3deg); }
+  42% { transform: rotate(8deg); }
+  68% { transform: rotate(-6deg); }
+}
+
+@keyframes ear-right {
+  0%,
+  100% { transform: rotate(3deg); }
+  42% { transform: rotate(-7deg); }
+  68% { transform: rotate(5deg); }
+}
+
+@keyframes wave {
+  0%,
+  100% { transform: rotate(-18deg); }
+  50% { transform: rotate(24deg); }
+}
+
+@keyframes ribbon-float {
+  0%,
+  100% { transform: translateX(0) rotate(0deg); }
+  42% { transform: translateX(-7px) rotate(-12deg); }
+}
+
+@keyframes sparkle {
+  0%,
+  100% { transform: translateY(8px) scale(0.45); opacity: 0; }
+  30% { opacity: 1; }
+  58% { transform: translateY(-8px) scale(1); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animated .rabbit,
+  .animated .shadow,
+  .animated .leftEar,
+  .animated .rightEar,
+  .animated .waveArm,
+  .animated .ribbon,
+  .animated .spark {
+    animation: none;
+  }
+
+  .spark {
+    opacity: 0.8;
+  }
+}

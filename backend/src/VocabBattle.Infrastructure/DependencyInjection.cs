@@ -22,6 +22,7 @@ public static class DependencyInjection
         services.AddSingleton<MongoContext>();
         services.AddScoped<ICardRepository, MongoCardRepository>();
         services.AddScoped<ICategoryRepository, MongoCategoryRepository>();
+        services.AddScoped<IFrameRepository, MongoFrameRepository>();
         services.AddSingleton<IGameRoomManager, GameRoomManager>();
         return services;
     }

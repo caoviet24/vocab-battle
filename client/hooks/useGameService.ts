@@ -20,6 +20,7 @@ export function useGameService(roomCode: string, enabled = true) {
   const socketRef = useRef<WebSocket | null>(null);
   const myPlayerId = useGameStore((state) => state.myPlayerId);
   const myName = useGameStore((state) => state.myName);
+  const myFrameUrl = useGameStore((state) => state.myFrameUrl);
 
   const send = useCallback((message: object) => {
     if (socketRef.current?.readyState === WebSocket.OPEN) {
@@ -40,6 +41,7 @@ export function useGameService(roomCode: string, enabled = true) {
       password,
       isHost,
     });
+    if (myFrameUrl) query.set("frameUrl", myFrameUrl);
     const socket = new WebSocket(
       `${process.env.NEXT_PUBLIC_WS_URL ?? ""}/ws/room/${roomCode}?${query}`,
     );
@@ -162,7 +164,7 @@ export function useGameService(roomCode: string, enabled = true) {
       if (socketRef.current === socket) socketRef.current = null;
       socket.close();
     };
-  }, [enabled, myName, myPlayerId, roomCode]);
+  }, [enabled, myFrameUrl, myName, myPlayerId, roomCode]);
 
   const startGame = useCallback(() => {
     const saved = sessionStorage.getItem(`room_config_${roomCode}`);

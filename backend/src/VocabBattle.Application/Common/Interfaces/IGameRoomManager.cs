@@ -8,7 +8,8 @@ public sealed record RoomConnection(
     string PlayerId,
     string PlayerName,
     string Password,
-    bool IsHost);
+    bool IsHost,
+    string FrameUrl = "");
 
 public interface IGameRoomManager
 {

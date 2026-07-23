@@ -1,0 +1,33 @@
+[
+  {
+    "date": "2026-07-23",
+    "macrostructure": "Workbench",
+    "theme": "custom",
+    "enrichment": "none",
+    "variation": "asymmetric category catalogue + form",
+    "brief": "Admin category management"
+  },
+  {
+    "date": "2026-07-23",
+    "macrostructure": "Workbench",
+    "theme": "custom",
+    "enrichment": "none",
+    "variation": "filterable inventory sheet + edit form",
+    "brief": "Admin vocabulary management"
+  },
+  {
+    "date": "2026-07-21",
+    "macrostructure": "Workbench",
+    "theme": "custom",
+    "enrichment": "none",
+    "variation": "asymmetric summary rail + live-room sheet",
+    "brief": "Admin dashboard shell"
+  },
+  {
+    "date": "2026-07-21",
+    "macrostructure": "Workbench",
+    "theme": "custom",
+    "enrichment": "none",
+    "brief": "Shared application header and statement footer"
+  }
+]

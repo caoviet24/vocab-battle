@@ -41,6 +41,18 @@ public sealed class GameRoomManagerTests
         Assert.Equal(1, manager.GetRooms().Single().PlayerCount);
     }
 
+    [Fact]
+    public async Task FrameIsIncludedInRoomSnapshot()
+    {
+        var manager = new GameRoomManager();
+        await manager.ConnectAsync(
+            new RoomConnection("ROOM-A", "a", "Player", string.Empty, true, "https://cdn.example.com/frame.webp"),
+            new FakeGameClient(),
+            default);
+
+        Assert.Equal("https://cdn.example.com/frame.webp", manager.GetRooms().Single().Players.Single().FrameUrl);
+    }
+
     private static RoomConnection Connection(string room, string player, bool isHost) =>
         new(room, player, player.ToUpperInvariant(), string.Empty, isHost);
 

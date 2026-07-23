@@ -26,6 +26,13 @@ export interface CategoryOption {
   description: string;
 }
 
+export interface Frame {
+  frame_id: string;
+  name: string;
+  url: string;
+  created_at: string;
+}
+
 export interface Card {
   card_id: string;
   word: string;
@@ -69,6 +76,7 @@ export interface Player {
   player_id: string;
   name: string;
   score: number;
+  frame_url?: string;
 }
 
 export interface RoomInfo {
@@ -145,6 +153,8 @@ export interface ServerMessage {
 export interface GameState {
   myPlayerId: string;
   myName: string;
+  myAvatarUrl: string;
+  myFrameUrl: string;
   roomCode: string;
   isHost: boolean;
   hasPassword: boolean;
@@ -161,6 +171,7 @@ export interface GameState {
   phoneticsData: Phonetic[] | null;
   lastTotalRounds: number;
   setMyInfo: (id: string, name: string) => void;
+  setMyProfile: (avatarUrl: string, frameUrl: string) => void;
   setRoomCode: (code: string) => void;
   setIsHost: (value: boolean) => void;
   setHasPassword: (value: boolean) => void;

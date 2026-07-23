@@ -24,7 +24,8 @@ public sealed class GameHub(IMediator mediator, IGameRoomManager rooms, ILogger<
         var roomCode = context.Request.RouteValues["roomCode"]?.ToString()?.ToUpperInvariant() ?? string.Empty;
         var playerId = context.Request.Query["playerId"].ToString();
         var playerName = context.Request.Query["playerName"].ToString();
-        if (roomCode.Length == 0 || playerId.Length == 0 || playerName.Length == 0)
+        var frameUrl = context.Request.Query["frameUrl"].ToString();
+        if (roomCode.Length == 0 || playerId.Length == 0 || playerName.Length == 0 || !IsValidFrameUrl(frameUrl))
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             return;
@@ -37,7 +38,8 @@ public sealed class GameHub(IMediator mediator, IGameRoomManager rooms, ILogger<
             playerId,
             playerName,
             context.Request.Query["password"].ToString(),
-            context.Request.Query["isHost"] == "1");
+            context.Request.Query["isHost"] == "1",
+            frameUrl);
 
         try
         {
@@ -166,4 +168,8 @@ public sealed class GameHub(IMediator mediator, IGameRoomManager rooms, ILogger<
         {
         }
     }
+
+    private static bool IsValidFrameUrl(string value) =>
+        value.Length <= 2_048 && (value.Length == 0 ||
+            Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https");
 }

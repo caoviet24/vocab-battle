@@ -12,8 +12,10 @@ public sealed class MongoContext
         var database = new MongoClient(settings.ConnectionString).GetDatabase(settings.DatabaseName);
         Cards = database.GetCollection<CardDocument>("cards");
         Categories = database.GetCollection<CategoryDocument>("categories");
+        Frames = database.GetCollection<FrameDocument>("frames");
     }
 
     public IMongoCollection<CardDocument> Cards { get; }
     public IMongoCollection<CategoryDocument> Categories { get; }
+    public IMongoCollection<FrameDocument> Frames { get; }
 }
