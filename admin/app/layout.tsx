@@ -5,6 +5,7 @@ import {
   IBM_Plex_Sans,
 } from "next/font/google";
 import { Providers } from "@/app/providers";
+import { AdminAccessGate } from "@/components/admin-access-gate";
 import { SiteFooter, SiteHeader } from "@/components/site-shell";
 import "./globals.css";
 
@@ -46,7 +47,7 @@ export default function RootLayout({
       </head>
       <body className={`${displayFont.variable} ${bodyFont.variable} ${monoFont.variable} min-h-full`}>
         <Providers>
-          <div className="flex min-h-dvh flex-col">
+          <AdminAccessGate><div className="flex min-h-dvh flex-col">
             <a
               href="#main-content"
               className="sr-only z-[var(--z-toast)] rounded-lg bg-signal px-4 py-2 font-semibold text-background focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
@@ -56,7 +57,7 @@ export default function RootLayout({
             <SiteHeader />
             <div className="flex min-h-0 flex-1 flex-col">{children}</div>
             <SiteFooter />
-          </div>
+          </div></AdminAccessGate>
         </Providers>
       </body>
     </html>

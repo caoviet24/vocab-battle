@@ -1,7 +1,6 @@
 type EncryptedCardPayload = { iv: string; ciphertext: string };
 
-const decodeBase64 = (value: string) =>
-    Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
+const decodeBase64 = (value: string) => Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
 const decodeKey = (value: string) =>
     /^[0-9a-f]{64}$/i.test(value)
         ? Uint8Array.from(value.match(/.{2}/g)!, (byte) => Number.parseInt(byte, 16))

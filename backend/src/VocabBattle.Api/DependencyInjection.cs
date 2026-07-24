@@ -1,5 +1,6 @@
 using VocabBattle.Api.Hubs;
 using VocabBattle.Api.Serialization;
+using VocabBattle.Api.Security;
 
 namespace VocabBattle.Api;
 
@@ -16,7 +17,7 @@ public static class DependencyInjection
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
         services.AddCors(options => options.AddDefaultPolicy(policy =>
-            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().WithExposedHeaders(AdminSessionStore.HeaderName)));
         services.AddSingleton<CardPayloadCipher>();
         services.AddScoped<GameHub>();
         return services;
